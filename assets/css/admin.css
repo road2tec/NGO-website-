@@ -1,0 +1,32 @@
+/* Admin panel styles - reuses tokens from the public stylesheet */
+.admin-login-body { min-height: 100vh; background: var(--mist); }
+
+.admin-wrap { display: flex; min-height: 100vh; background: var(--mist); }
+.admin-sidebar {
+  width: 260px; flex-shrink: 0; background: var(--blue-deep); color: #dbe8f8;
+  min-height: 100vh; position: sticky; top: 0; padding: 1.2rem 0;
+}
+.admin-sidebar .brand { display:flex; align-items:center; gap:.6rem; padding: 0 1.2rem 1.2rem; border-bottom: 1px solid rgba(255,255,255,.1); margin-bottom: .8rem; color:#fff; font-weight:800; }
+.admin-sidebar .nav-group-title { font-size:.72rem; text-transform:uppercase; letter-spacing:.08em; color:#8fb2d8; padding: 1rem 1.2rem .3rem; }
+.admin-sidebar a { display:flex; align-items:center; gap:.6rem; color:#dbe8f8; padding:.55rem 1.2rem; font-size:.92rem; font-weight:600; }
+.admin-sidebar a i { width:18px; text-align:center; }
+.admin-sidebar a:hover, .admin-sidebar a.active { background: rgba(255,255,255,.08); color:#fff; border-right:3px solid var(--orange); }
+
+.admin-main { flex-grow: 1; min-width: 0; }
+.admin-topbar { background:#fff; box-shadow: 0 2px 12px rgba(20,60,110,.06); padding: .9rem 1.5rem; display:flex; justify-content:space-between; align-items:center; }
+.admin-content { padding: 1.5rem; }
+
+.admin-card { background:#fff; border-radius: 16px; box-shadow: var(--shadow-soft); padding: 1.5rem; }
+.stat-tile { background:#fff; border-radius:16px; box-shadow: var(--shadow-soft); padding:1.3rem; }
+.stat-tile .num { font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:1.8rem; }
+
+.table-admin { background:#fff; border-radius:14px; overflow:hidden; }
+.table-admin thead { background: var(--blue-soft); }
+.table-admin th, .table-admin td { vertical-align: middle; padding: .75rem 1rem; }
+.thumb-sm { width:44px; height:44px; border-radius:8px; object-fit:cover; background: var(--blue-soft); }
+
+@media (max-width: 900px) {
+  .admin-sidebar { position: fixed; left: -260px; z-index: 1050; transition: left .2s ease; height:100vh; }
+  .admin-sidebar.open { left: 0; }
+  .admin-main { width: 100%; }
+}

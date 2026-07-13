@@ -1,0 +1,7 @@
+User-agent: *
+Disallow: /admin/
+Disallow: /config/
+Disallow: /app/
+Allow: /
+
+Sitemap: https://YOUR-DOMAIN.org/sitemap.php
