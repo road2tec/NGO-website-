@@ -3,7 +3,7 @@
  * Admin bootstrap. Every admin page starts with:
  *   require_once __DIR__ . '/includes/auth.php';
  */
-require_once dirname(__DIR__) . '/config/config.php';
+require_once dirname(__DIR__, 2) . '/config/config.php';
 
 define('ADMIN_URL', BASE_URL . '/admin');
 

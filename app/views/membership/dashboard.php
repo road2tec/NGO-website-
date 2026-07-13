@@ -25,6 +25,7 @@
             <?php if ($member['status'] === 'approved'): ?>
               <a href="<?= url('membership/idcard') ?>" class="btn btn-blue">Download ID Card</a>
             <?php endif; ?>
+            <a href="<?= url('admin/login.php') ?>" class="btn btn-outline-nav">Login as Admin</a>
             <a href="<?= url('membership/logout') ?>" class="btn btn-outline-nav">Log out</a>
           </div>
         </div>
