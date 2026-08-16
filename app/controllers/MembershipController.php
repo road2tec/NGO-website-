@@ -21,34 +21,98 @@ class MembershipController extends Controller
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             require_csrf();
             $errors = [];
-            if (post('name') === '')                 $errors[] = 'Name is required.';
-            if (!valid_email(post('email')))         $errors[] = 'A valid email is required.';
-            if (!valid_phone(post('phone')))         $errors[] = 'A valid phone number is required.';
-            if (strlen(post('password')) < 6)        $errors[] = 'Password must be at least 6 characters.';
+
+            $firstName = post('first_name');
+            $middleName = post('middle_name');
+            $surname = post('surname');
+            if ($firstName === '')                   $errors[] = 'First name is required.';
+            if ($surname === '')                      $errors[] = 'Surname is required.';
+            if (!in_array(post('gender'), ['Male', 'Female', 'Other'], true)) $errors[] = 'Gender is required.';
+            $dob = post('dob');
+            if ($dob === '')                          $errors[] = 'Date of birth is required.';
+            elseif (!$this->validDob($dob))            $errors[] = 'Enter a valid date of birth (not in the future).';
+            if (!valid_email(post('email')))          $errors[] = 'A valid email is required.';
+            if (!valid_phone(post('phone')))          $errors[] = 'A valid phone number is required.';
+            if (post('address') === '')                $errors[] = 'Address is required.';
+            if (!valid_pincode(post('pincode')))       $errors[] = 'Pincode must be exactly 6 digits.';
+            if (strlen(post('password')) < 6)         $errors[] = 'Password must be at least 6 characters.';
             if (post('password') !== post('password2')) $errors[] = 'Passwords do not match.';
-            if (!captcha_verify())                   $errors[] = 'Captcha answer was wrong.';
+            if (!captcha_verify())                    $errors[] = 'Captcha answer was wrong.';
             if (Database::value("SELECT COUNT(*) FROM members WHERE email=?", [post('email')]) > 0) {
                 $errors[] = 'This email is already registered. Use "Check Membership Status" instead.';
             }
+
+            // Location: state is always a real record; district/taluka may be 'other'.
+            $stateId = (int) post('state_id');
+            $state = $stateId ? Database::one("SELECT id FROM states WHERE id=? AND status='active'", [$stateId]) : null;
+            if (!$state) $errors[] = 'Please select a valid state.';
+
+            $districtId = null; $districtOther = null;
+            $districtRaw = post('district_id');
+            if ($districtRaw === 'other') {
+                $districtOther = post('district_other');
+                if ($districtOther === '') $errors[] = 'Please enter your district (Other).';
+            } elseif ($state && ctype_digit($districtRaw) && location_district_belongs_to_state((int) $districtRaw, $stateId)) {
+                $districtId = (int) $districtRaw;
+            } else {
+                $errors[] = 'Please select a valid district.';
+            }
+
+            // No validated district means there's no taluka list to check against
+            // either - the taluka is necessarily free text in that case too.
+            $talukaId = null; $talukaOther = null;
+            $talukaRaw = post('taluka_id');
+            if ($districtId === null) {
+                $talukaOther = post('taluka_other');
+                if ($talukaOther === '') $errors[] = 'Please enter your taluka (Other).';
+            } elseif ($talukaRaw === 'other') {
+                $talukaOther = post('taluka_other');
+                if ($talukaOther === '') $errors[] = 'Please enter your taluka (Other).';
+            } elseif (ctype_digit($talukaRaw) && location_taluka_belongs_to_district((int) $talukaRaw, $districtId)) {
+                $talukaId = (int) $talukaRaw;
+            } else {
+                $errors[] = 'Please select a valid taluka.';
+            }
+
+            $idProofType = post('id_proof_type');
+            if (!array_key_exists($idProofType, id_proof_types())) $errors[] = 'Please select an ID proof type.';
+            if (post('id_proof_number') === '')       $errors[] = 'ID proof document number is required.';
+            if (empty($_FILES['id_proof_file']['name'])) $errors[] = 'Please upload your ID proof document.';
+
+            if (!post('terms'))                       $errors[] = 'You must agree to the Terms & Conditions and Privacy Policy.';
 
             if ($errors) {
                 flash_set('error', implode(' ', $errors));
             } else {
                 try {
                     $photo = handle_upload('photo', 'members');
+                    $idProofFile = handle_upload('id_proof_file', 'private/id_proofs', ALLOWED_DOC_TYPES);
+                    $fullName = trim($firstName . ' ' . ($middleName !== '' ? $middleName . ' ' : '') . $surname);
                     Database::insert('members', [
-                        'category_id' => (int) post('category_id') ?: null,
-                        'name'        => post('name'),
-                        'photo'       => $photo,
-                        'dob'         => post('dob') ?: null,
-                        'gender'      => in_array(post('gender'), ['Male','Female','Other']) ? post('gender') : null,
-                        'email'       => post('email'),
-                        'phone'       => post('phone'),
-                        'address'     => post('address'),
-                        'occupation'  => post('occupation'),
-                        'blood_group' => post('blood_group'),
-                        'aadhar'      => post('aadhar'),
-                        'password'    => password_hash(post('password'), PASSWORD_DEFAULT),
+                        'category_id'      => (int) post('category_id') ?: null,
+                        'name'             => $fullName,
+                        'first_name'       => $firstName,
+                        'middle_name'      => $middleName ?: null,
+                        'surname'          => $surname,
+                        'photo'            => $photo,
+                        'dob'              => $dob,
+                        'gender'           => post('gender'),
+                        'email'            => post('email'),
+                        'phone'            => post('phone'),
+                        'address'          => post('address'),
+                        'occupation'       => post('occupation'),
+                        'blood_group'      => post('blood_group'),
+                        'state_id'         => $stateId,
+                        'district_id'      => $districtId,
+                        'district_other'   => $districtOther,
+                        'taluka_id'        => $talukaId,
+                        'taluka_other'     => $talukaOther,
+                        'pincode'          => post('pincode'),
+                        'id_proof_type'    => $idProofType,
+                        'id_proof_number'  => post('id_proof_number'),
+                        'id_proof_file'    => $idProofFile,
+                        'terms_accepted_at' => date('Y-m-d H:i:s'),
+                        'password'         => password_hash(post('password'), PASSWORD_DEFAULT),
                     ]);
                     flash_set('success', 'Application received! Your membership is pending admin approval. You can check the status anytime with your email and password.');
                     redirect('membership/status');
@@ -60,10 +124,20 @@ class MembershipController extends Controller
         }
 
         $this->render('membership/apply', [
-            'pageTitle'  => 'Apply for Membership',
-            'categories' => $categories,
-            'captcha'    => captcha_question(),
+            'pageTitle'   => 'Apply for Membership',
+            'categories'  => $categories,
+            'states'      => location_states(),
+            'idProofTypes' => id_proof_types(),
+            'captcha'     => captcha_question(),
         ]);
+    }
+
+    private function validDob(string $dob): bool
+    {
+        $d = DateTime::createFromFormat('Y-m-d', $dob);
+        if (!$d || $d->format('Y-m-d') !== $dob) return false;
+        $now = new DateTime();
+        return $d <= $now && $d->format('Y') >= 1900;
     }
 
     /** Public member directory (approved members only, limited fields) */

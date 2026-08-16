@@ -1,16 +1,16 @@
 /**
- * Wires up State -> District -> Taluka dependent dropdowns.
- * Usage: give the three <select> elements matching data attributes and call
- * initLocationDropdowns() once the DOM is ready. Works for any number of
- * state/district/taluka trios on the same page (e.g. a filter row + a form).
+ * Wires up State -> District -> Taluka dependent dropdowns, each with an
+ * "Other" fallback that reveals a free-text input. Works for any number of
+ * trios on the same page (e.g. a filter row + a form) as long as each trio
+ * is wrapped in an element carrying [data-location-group].
  *
- *   <select data-location="state"></select>
- *   <select data-location="district" disabled></select>
- *   <select data-location="taluka" disabled></select>
- *
- * Each select's containing element (`data-location-group`) is optional; if
- * present, dropdowns are looked up within that scope instead of globally,
- * so multiple independent trios can coexist on one page.
+ *   <div data-location-group>
+ *     <select data-location="state" name="state_id"></select>
+ *     <select data-location="district" name="district_id" disabled></select>
+ *     <input data-other-for="district" name="district_other" class="d-none">
+ *     <select data-location="taluka" name="taluka_id" disabled></select>
+ *     <input data-other-for="taluka" name="taluka_other" class="d-none">
+ *   </div>
  */
 (function () {
   const API_BASE = (window.NGO_BASE_URL || '') + '/api/index.php';
@@ -37,6 +37,14 @@
     select.appendChild(otherOpt);
   }
 
+  function showOther(input, show) {
+    if (!input) return;
+    input.classList.toggle('d-none', !show);
+    input.required = show;
+    input.disabled = !show;
+    if (!show) input.value = '';
+  }
+
   async function fetchJson(url) {
     const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
     if (!res.ok) throw new Error('Request failed');
@@ -49,16 +57,21 @@
     const talukaSel = scope.querySelector('[data-location="taluka"]');
     if (!stateSel || !districtSel || !talukaSel) return;
 
+    const districtOther = scope.querySelector('[data-other-for="district"]');
+    const talukaOther = scope.querySelector('[data-other-for="taluka"]');
+
     const initialDistrictId = districtSel.getAttribute('data-selected') || '';
     const initialTalukaId = talukaSel.getAttribute('data-selected') || '';
 
     function resetDistrict() {
       placeholder(districtSel, 'Select State First');
       districtSel.disabled = true;
+      showOther(districtOther, false);
     }
-    function resetTaluka() {
-      placeholder(talukaSel, 'Select District First');
+    function resetTaluka(text) {
+      placeholder(talukaSel, text || 'Select District First');
       talukaSel.disabled = true;
+      showOther(talukaOther, false);
     }
 
     async function loadDistricts(stateId, preselect) {
@@ -70,34 +83,48 @@
         fillOptions(districtSel, data.districts || [], 'No districts found');
         districtSel.disabled = false;
         if (preselect) districtSel.value = preselect;
+        handleDistrictChange();
       } catch (e) {
         placeholder(districtSel, 'Could not load districts');
       }
     }
 
     async function loadTalukas(districtId, preselect) {
-      if (!districtId || districtId === 'other') { resetTaluka(); return; }
       talukaSel.disabled = true;
       placeholder(talukaSel, 'Loading...');
       try {
         const data = await fetchJson(`${API_BASE}?resource=talukas&district_id=${encodeURIComponent(districtId)}`);
         fillOptions(talukaSel, data.talukas || [], 'No talukas found - select Other');
         talukaSel.disabled = false;
-        if (preselect) talukaSel.value = preselect;
+        if (preselect) {
+          talukaSel.value = preselect;
+          showOther(talukaOther, preselect === 'other');
+        }
       } catch (e) {
         placeholder(talukaSel, 'Could not load talukas');
       }
     }
 
+    // A district of "Other" means there is no known district to look talukas
+    // up against, so the taluka becomes a free-text field too.
+    function handleDistrictChange() {
+      showOther(districtOther, districtSel.value === 'other');
+      if (districtSel.value === 'other') {
+        resetTaluka('Not applicable - enter below');
+        showOther(talukaOther, true);
+      } else if (districtSel.value) {
+        loadTalukas(districtSel.value, initialTalukaId);
+      } else {
+        resetTaluka();
+      }
+    }
+
     stateSel.addEventListener('change', () => loadDistricts(stateSel.value));
-    districtSel.addEventListener('change', () => loadTalukas(districtSel.value));
+    districtSel.addEventListener('change', handleDistrictChange);
+    talukaSel.addEventListener('change', () => showOther(talukaOther, talukaSel.value === 'other'));
 
     if (stateSel.value) {
-      loadDistricts(stateSel.value, initialDistrictId).then(() => {
-        if (initialDistrictId && initialDistrictId !== 'other') {
-          loadTalukas(initialDistrictId, initialTalukaId);
-        }
-      });
+      loadDistricts(stateSel.value, initialDistrictId);
     } else {
       resetDistrict();
       resetTaluka();

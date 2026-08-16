@@ -143,6 +143,23 @@ function valid_phone(string $phone): bool
     return (bool) preg_match('/^[0-9+\-\s]{8,15}$/', $phone);
 }
 
+function valid_pincode(string $pincode): bool
+{
+    return (bool) preg_match('/^[0-9]{6}$/', $pincode);
+}
+
+/** value => label, used by both the apply form and the admin member list. */
+function id_proof_types(): array
+{
+    return [
+        'aadhaar'         => 'Aadhaar Card',
+        'voter_id'        => 'Voter ID',
+        'passport'        => 'Passport',
+        'driving_licence' => 'Driving Licence',
+        'pan_card'        => 'PAN Card',
+    ];
+}
+
 /* ---------------- Slugs ---------------- */
 function slugify(string $text): string
 {
@@ -325,13 +342,30 @@ function location_taluka_belongs_to_district(int $talukaId, int $districtId): bo
 }
 
 /* ---------------- IDs & codes ---------------- */
-function generate_member_no(): string
+/**
+ * Member ID format: {PREFIX}-{DISTRICT}-{YY}-{SEQ}, e.g. NGO-PUN-26-0001.
+ * Prefix is configurable via the 'member_no_prefix' setting. District
+ * segment uses the district's `code` when set, otherwise the first 3
+ * letters of its name; omitted entirely if no district is known (keeps
+ * the old MEM-YYYY-seq shape working for members with no location on file).
+ */
+function generate_member_no(?int $districtId = null): string
 {
-    $year = date('Y');
-    $seq  = (int) Database::value(
-        "SELECT COUNT(*) FROM members WHERE member_no LIKE ?", ["MEM-$year-%"]
-    ) + 1;
-    return sprintf('MEM-%s-%04d', $year, $seq);
+    $prefix = strtoupper(setting('member_no_prefix', 'MEM')) ?: 'MEM';
+    $year   = date('y');
+
+    $districtTag = '';
+    if ($districtId) {
+        $district = Database::one("SELECT name, code FROM districts WHERE id=?", [$districtId]);
+        if ($district) {
+            $raw = $district['code'] ?: preg_replace('/[^A-Za-z]/', '', $district['name']);
+            $districtTag = strtoupper(substr($raw, 0, 3)) . '-';
+        }
+    }
+
+    $like = "$prefix-$districtTag$year-%";
+    $seq  = (int) Database::value("SELECT COUNT(*) FROM members WHERE member_no LIKE ?", [$like]) + 1;
+    return sprintf('%s-%s%s-%04d', $prefix, $districtTag, $year, $seq);
 }
 
 function generate_cert_code(): string

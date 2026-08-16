@@ -6,7 +6,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'facebook_url','instagram_url','twitter_url','youtube_url',
         'seo_title','seo_description','seo_keywords',
         'donate_upi','donate_bank','registration_no','pan_80g','membership_fee_note','announcement',
-        'stat_members','stat_projects','stat_beneficiaries','stat_villages',
+        'stat_members','stat_projects','stat_beneficiaries','stat_villages','member_no_prefix',
     ];
     foreach ($keys as $k) {
         save_setting($k, post($k));
@@ -60,6 +60,7 @@ $s = fn($k) => setting($k);
         <div class="mb-3"><label class="form-label">Registration No.</label><input class="form-control" name="registration_no" value="<?= e($s('registration_no')) ?>"></div>
         <div class="mb-3"><label class="form-label">80G / 12A note</label><input class="form-control" name="pan_80g" value="<?= e($s('pan_80g')) ?>"></div>
         <div class="mb-3"><label class="form-label">Membership fee note</label><input class="form-control" name="membership_fee_note" value="<?= e($s('membership_fee_note')) ?>"></div>
+        <div class="mb-3"><label class="form-label">Member number prefix</label><input class="form-control" name="member_no_prefix" value="<?= e($s('member_no_prefix') ?: 'MEM') ?>" maxlength="10"><div class="form-text">Used when a member is approved, e.g. <code><?= e($s('member_no_prefix') ?: 'MEM') ?>-PUN-26-0001</code>.</div></div>
         <div class="mb-3"><label class="form-label">Homepage announcement banner</label><input class="form-control" name="announcement" value="<?= e($s('announcement')) ?>"></div>
       </div>
       <div class="admin-card">
