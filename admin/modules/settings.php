@@ -5,7 +5,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'site_name','site_tagline','site_email','site_phone','site_whatsapp','site_address','map_embed',
         'facebook_url','instagram_url','twitter_url','youtube_url',
         'seo_title','seo_description','seo_keywords',
-        'donate_upi','donate_bank','registration_no','pan_80g','membership_fee_note','announcement',
+        'donate_upi','registration_no','pan_80g','membership_fee_note','announcement',
+        'bank_account_name','bank_name','bank_account_number','bank_ifsc','bank_branch',
+        'crowdfunding_banner_title','crowdfunding_banner_text','crowdfunding_banner_campaign_id',
         'stat_members','stat_projects','stat_beneficiaries','stat_villages','member_no_prefix',
     ];
     foreach ($keys as $k) {
@@ -22,6 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $s = fn($k) => setting($k);
+$activeCampaigns = Database::all("SELECT id, title FROM campaigns WHERE is_active=1 ORDER BY title");
 ?>
 <form method="post" enctype="multipart/form-data">
   <?= csrf_field() ?>
@@ -55,13 +58,37 @@ $s = fn($k) => setting($k);
       <div class="admin-card mb-4">
         <h6 class="fw-bold mb-3">Donations &amp; legal</h6>
         <div class="mb-3"><label class="form-label">UPI ID</label><input class="form-control" name="donate_upi" value="<?= e($s('donate_upi')) ?>"></div>
-        <div class="mb-3"><label class="form-label">Bank details</label><textarea class="form-control" name="donate_bank" rows="4"><?= e($s('donate_bank')) ?></textarea></div>
         <div class="mb-3"><label class="form-label">Donation QR image (optional)</label><input type="file" class="form-control" name="donate_qr_image" accept="image/*"></div>
         <div class="mb-3"><label class="form-label">Registration No.</label><input class="form-control" name="registration_no" value="<?= e($s('registration_no')) ?>"></div>
         <div class="mb-3"><label class="form-label">80G / 12A note</label><input class="form-control" name="pan_80g" value="<?= e($s('pan_80g')) ?>"></div>
         <div class="mb-3"><label class="form-label">Membership fee note</label><input class="form-control" name="membership_fee_note" value="<?= e($s('membership_fee_note')) ?>"></div>
         <div class="mb-3"><label class="form-label">Member number prefix</label><input class="form-control" name="member_no_prefix" value="<?= e($s('member_no_prefix') ?: 'MEM') ?>" maxlength="10"><div class="form-text">Used when a member is approved, e.g. <code><?= e($s('member_no_prefix') ?: 'MEM') ?>-PUN-26-0001</code>.</div></div>
         <div class="mb-3"><label class="form-label">Homepage announcement banner</label><input class="form-control" name="announcement" value="<?= e($s('announcement')) ?>"></div>
+      </div>
+      <div class="admin-card mb-4">
+        <h6 class="fw-bold mb-3">Bank transfer details</h6>
+        <p class="small text-muted">Shown on the Donate page with one-click copy buttons for Account Number and IFSC.</p>
+        <div class="row g-3">
+          <div class="col-md-6"><label class="form-label">Account Name</label><input class="form-control" name="bank_account_name" value="<?= e($s('bank_account_name')) ?>"></div>
+          <div class="col-md-6"><label class="form-label">Bank Name</label><input class="form-control" name="bank_name" value="<?= e($s('bank_name')) ?>"></div>
+          <div class="col-md-6"><label class="form-label">Account Number</label><input class="form-control" name="bank_account_number" value="<?= e($s('bank_account_number')) ?>"></div>
+          <div class="col-md-6"><label class="form-label">IFSC Code</label><input class="form-control" name="bank_ifsc" value="<?= e($s('bank_ifsc')) ?>"></div>
+          <div class="col-md-12"><label class="form-label">Branch (optional)</label><input class="form-control" name="bank_branch" value="<?= e($s('bank_branch')) ?>"></div>
+        </div>
+      </div>
+      <div class="admin-card mb-4">
+        <h6 class="fw-bold mb-3">Homepage crowdfunding banner</h6>
+        <div class="mb-3"><label class="form-label">Headline</label><input class="form-control" name="crowdfunding_banner_title" value="<?= e($s('crowdfunding_banner_title')) ?>"></div>
+        <div class="mb-3"><label class="form-label">Supporting text</label><input class="form-control" name="crowdfunding_banner_text" value="<?= e($s('crowdfunding_banner_text')) ?>"></div>
+        <div class="mb-3">
+          <label class="form-label">Featured campaign (progress bar)</label>
+          <select class="form-select" name="crowdfunding_banner_campaign_id">
+            <option value="">Most recent active campaign (default)</option>
+            <?php foreach ($activeCampaigns as $c): ?>
+              <option value="<?= (int) $c['id'] ?>" <?= (string) $s('crowdfunding_banner_campaign_id') === (string) $c['id'] ? 'selected' : '' ?>><?= e($c['title']) ?></option>
+            <?php endforeach; ?>
+          </select>
+        </div>
       </div>
       <div class="admin-card">
         <h6 class="fw-bold mb-3">Homepage statistics</h6>

@@ -45,6 +45,7 @@ $currentPage = get_param('page', 'dashboard');
       <div class="nav-group-title">Fundraising</div>
       <a href="<?= admin_url('index.php?page=campaigns') ?>" class="<?= $currentPage==='campaigns'?'active':'' ?>"><i class="fa-solid fa-hand-holding-heart"></i>Crowdfunding</a>
       <a href="<?= admin_url('index.php?page=donations') ?>" class="<?= $currentPage==='donations'?'active':'' ?>"><i class="fa-solid fa-sack-dollar"></i>Donations</a>
+      <a href="<?= admin_url('index.php?page=donation_amounts') ?>" class="<?= $currentPage==='donation_amounts'?'active':'' ?>"><i class="fa-solid fa-coins"></i>Donation Amount Cards</a>
 
       <div class="nav-group-title">Documents &amp; People</div>
       <a href="<?= admin_url('index.php?page=documents') ?>" class="<?= $currentPage==='documents'?'active':'' ?>"><i class="fa-solid fa-file-lines"></i>Documents</a>

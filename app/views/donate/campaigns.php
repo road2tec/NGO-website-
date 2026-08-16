@@ -20,13 +20,20 @@
           <?php else: ?>
             <div class="card-img-placeholder"><i class="fa-solid fa-hand-holding-heart"></i></div>
           <?php endif; ?>
+          <?php
+            $goal      = max(1, (float) $c['goal_amount']);
+            $raised    = (float) $c['raised_amount'];
+            $remaining = max(0, $goal - $raised);
+            $progress  = min(100, round($raised / $goal * 100));
+          ?>
           <div class="p-4">
             <h5 class="fw-bold"><?= e($c['title']) ?></h5>
             <p class="text-muted small"><?= e(excerpt($c['summary'] ?? '', 100)) ?></p>
             <div class="d-flex justify-content-between small text-muted mb-1">
-              <span><?= format_inr($c['raised_amount']) ?> raised</span><span>Goal: <?= format_inr($c['goal_amount']) ?></span>
+              <span><?= format_inr($raised) ?> raised</span><span>Goal: <?= format_inr($goal) ?></span>
             </div>
-            <div class="progress-seva mb-3"><div class="progress-bar" style="width: <?= min(100, round($c['raised_amount']/max(1,$c['goal_amount'])*100)) ?>%"></div></div>
+            <div class="progress-seva mb-2"><div class="progress-bar" style="width: <?= $progress ?>%"></div></div>
+            <div class="small text-muted mb-3"><?= $progress ?>% funded &middot; <?= format_inr($remaining) ?> remaining</div>
             <a href="<?= url('donate/campaign/' . $c['slug']) ?>" class="btn btn-donate w-100">Support this campaign</a>
           </div>
         </div>

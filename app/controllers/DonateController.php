@@ -4,12 +4,17 @@ class DonateController extends Controller
     public function index(): void
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $this->handlePledge(null);
+            $campaignId = (int) post('campaign_id') ?: null;
+            if ($campaignId && !Database::value("SELECT COUNT(*) FROM campaigns WHERE id=? AND is_active=1", [$campaignId])) {
+                $campaignId = null; // tampered/stale campaign id - fall back to the general fund rather than trust it
+            }
+            $this->handlePledge($campaignId);
         }
         $this->render('donate/index', [
-            'pageTitle' => 'Donate Now',
-            'campaigns' => Database::all("SELECT * FROM campaigns WHERE is_active=1 ORDER BY id DESC LIMIT 3"),
-            'captcha'   => captcha_question(),
+            'pageTitle'     => 'Donate Now',
+            'campaigns'     => Database::all("SELECT * FROM campaigns WHERE is_active=1 ORDER BY id DESC"),
+            'amountOptions' => Database::all("SELECT * FROM donation_amount_options WHERE is_active=1 ORDER BY sort_order"),
+            'captcha'       => captcha_question(),
         ]);
     }
 
@@ -32,12 +37,13 @@ class DonateController extends Controller
         }
 
         $this->render('donate/campaign', [
-            'pageTitle' => $campaign['title'],
-            'metaDesc'  => $campaign['summary'] ?? '',
-            'campaign'  => $campaign,
-            'donors'    => Database::all("SELECT donor_name, amount, created_at FROM donations
+            'pageTitle'     => $campaign['title'],
+            'metaDesc'      => $campaign['summary'] ?? '',
+            'campaign'      => $campaign,
+            'donors'        => Database::all("SELECT donor_name, amount, created_at FROM donations
                                           WHERE campaign_id=? AND status='received' ORDER BY id DESC LIMIT 10", [$campaign['id']]),
-            'captcha'   => captcha_question(),
+            'amountOptions' => Database::all("SELECT * FROM donation_amount_options WHERE is_active=1 ORDER BY sort_order"),
+            'captcha'       => captcha_question(),
         ]);
     }
 
@@ -57,21 +63,47 @@ class DonateController extends Controller
     private function handlePledge(?int $campaignId, string $redirectTo = 'donate'): void
     {
         require_csrf();
-        $amount = (float) post('amount');
-        if (!captcha_verify()) {
-            flash_set('error', 'Captcha answer was wrong. Please try again.');
-        } elseif (post('donor_name') === '' || $amount < 1) {
-            flash_set('error', 'Please enter your name and a valid amount.');
+        $errors = [];
+
+        $firstName  = post('first_name');
+        $middleName = post('middle_name');
+        $surname    = post('surname');
+        if ($firstName === '')            $errors[] = 'First name is required.';
+        if ($surname === '')              $errors[] = 'Surname is required.';
+        if (!valid_email(post('email'))) $errors[] = 'A valid email is required.';
+        if (!valid_phone(post('phone'))) $errors[] = 'A valid phone number is required.';
+
+        $amountChoice = post('amount_option_id');
+        $amount = 0.0;
+        if ($amountChoice === 'custom') {
+            $amount = (float) post('custom_amount');
+            if ($amount < 1) $errors[] = 'Please enter a valid custom donation amount.';
+        } elseif ($amountChoice !== '' && ctype_digit($amountChoice)) {
+            $preset = Database::one("SELECT amount FROM donation_amount_options WHERE id=? AND is_active=1", [(int) $amountChoice]);
+            if ($preset) $amount = (float) $preset['amount'];
+            else $errors[] = 'Please select a valid donation amount.';
+        } else {
+            $errors[] = 'Please select a donation amount.';
+        }
+
+        if (!captcha_verify()) $errors[] = 'Captcha answer was wrong. Please try again.';
+
+        if ($errors) {
+            flash_set('error', implode(' ', $errors));
         } else {
             $receipt = generate_receipt_no();
+            $fullName = trim($firstName . ' ' . ($middleName !== '' ? $middleName . ' ' : '') . $surname);
             Database::insert('donations', [
                 'receipt_no'  => $receipt,
                 'campaign_id' => $campaignId,
-                'donor_name'  => post('donor_name'),
+                'donor_name'  => $fullName,
+                'first_name'  => $firstName,
+                'middle_name' => $middleName ?: null,
+                'surname'     => $surname,
                 'email'       => post('email'),
                 'phone'       => post('phone'),
                 'amount'      => $amount,
-                'method'      => in_array(post('method'), ['upi','bank','cash','online']) ? post('method') : 'upi',
+                'method'      => in_array(post('method'), ['upi','bank','cash','online'], true) ? post('method') : 'upi',
                 'txn_ref'     => post('txn_ref'),
                 'pan'         => post('pan'),
                 'message'     => post('message'),

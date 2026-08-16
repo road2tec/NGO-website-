@@ -33,9 +33,20 @@ class HomeController extends Controller
             'galleryItems' => Database::all("SELECT * FROM gallery_items WHERE type='image' ORDER BY id DESC LIMIT 6"),
             'testimonials' => Database::all("SELECT * FROM testimonials WHERE is_active=1 ORDER BY sort_order"),
             'news'         => Database::all("SELECT * FROM news WHERE is_published=1 ORDER BY published_at DESC LIMIT 3"),
-            'campaign'     => Database::one("SELECT * FROM campaigns WHERE is_active=1 ORDER BY id DESC LIMIT 1"),
+            'campaign'     => $this->crowdfundingBannerCampaign(),
             'sponsors'     => Database::all("SELECT * FROM sponsors ORDER BY sort_order"),
         ]);
+    }
+
+    /** Admin can pin a specific campaign to the homepage banner; falls back to the most recent active one. */
+    private function crowdfundingBannerCampaign(): ?array
+    {
+        $pinnedId = (int) setting('crowdfunding_banner_campaign_id');
+        if ($pinnedId) {
+            $pinned = Database::one("SELECT * FROM campaigns WHERE id=? AND is_active=1", [$pinnedId]);
+            if ($pinned) return $pinned;
+        }
+        return Database::one("SELECT * FROM campaigns WHERE is_active=1 ORDER BY id DESC LIMIT 1");
     }
 
     public function newsletter(): void

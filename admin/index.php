@@ -7,7 +7,7 @@ $page = get_param('page', 'dashboard');
 $allowed = [
     'dashboard','banners','about','people','achievements','certificates','testimonials','news','sponsors',
     'members','membership_categories','locations','projects','events','gallery','campaigns','donations',
-    'documents','volunteers','contacts','newsletter','settings','password',
+    'donation_amounts','documents','volunteers','contacts','newsletter','settings','password',
 ];
 if (!in_array($page, $allowed, true)) $page = 'dashboard';
 
@@ -17,7 +17,7 @@ $titles = [
     'testimonials' => 'Testimonials', 'news' => 'News', 'sponsors' => 'Sponsors / CSR Partners',
     'members' => 'Members', 'membership_categories' => 'Membership Categories', 'locations' => 'Location Master Data',
     'projects' => 'Projects', 'events' => 'Activities / Events', 'gallery' => 'Gallery',
-    'campaigns' => 'Crowdfunding Campaigns', 'donations' => 'Donations',
+    'campaigns' => 'Crowdfunding Campaigns', 'donations' => 'Donations', 'donation_amounts' => 'Donation Amount Cards',
     'documents' => 'Documents', 'volunteers' => 'Volunteer Applications', 'contacts' => 'Contact Messages',
     'newsletter' => 'Newsletter Subscribers', 'settings' => 'Website Settings', 'password' => 'Change Password',
 ];

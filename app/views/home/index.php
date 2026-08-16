@@ -144,22 +144,27 @@
     <div class="donate-banner p-4 p-lg-5" data-aos="zoom-in">
       <div class="row align-items-center g-4">
         <div class="col-lg-7">
-          <h3 class="mb-2">Support Us: your ₹500 can fund a month of school supplies</h3>
-          <p class="mb-0 opacity-75">100% of your donation is tracked to a project. Tax exemption available under 80G.</p>
+          <h3 class="mb-2"><?= e(setting('crowdfunding_banner_title')) ?></h3>
+          <p class="mb-0 opacity-75"><?= e(setting('crowdfunding_banner_text')) ?></p>
         </div>
         <div class="col-lg-5 text-lg-end">
           <a href="<?= url('donate') ?>" class="btn btn-donate btn-lg me-2">Donate Now</a>
           <a href="<?= url('donate/campaigns') ?>" class="btn btn-outline-light btn-lg mt-2 mt-lg-0">Crowdfunding</a>
         </div>
       </div>
-      <?php if ($campaign): ?>
+      <?php if ($campaign):
+        $goal     = max(1, (float) $campaign['goal_amount']);
+        $raised   = (float) $campaign['raised_amount'];
+        $remaining = max(0, $goal - $raised);
+        $progress  = min(100, round($raised / $goal * 100));
+      ?>
       <div class="mt-4 pt-4 border-top border-light border-opacity-25">
-        <div class="d-flex justify-content-between small mb-2">
+        <div class="d-flex justify-content-between small mb-2 flex-wrap gap-1">
           <span><?= e($campaign['title']) ?></span>
-          <span><?= format_inr($campaign['raised_amount']) ?> raised of <?= format_inr($campaign['goal_amount']) ?></span>
+          <span><?= format_inr($raised) ?> raised of <?= format_inr($goal) ?> &middot; <?= format_inr($remaining) ?> remaining</span>
         </div>
         <div class="progress-seva">
-          <div class="progress-bar" style="width: <?= min(100, round($campaign['raised_amount'] / max(1,$campaign['goal_amount']) * 100)) ?>%"></div>
+          <div class="progress-bar" style="width: <?= $progress ?>%"></div>
         </div>
       </div>
       <?php endif; ?>

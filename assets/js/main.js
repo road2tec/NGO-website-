@@ -98,4 +98,35 @@
   document.querySelectorAll('img:not([loading])').forEach(function (img) {
     img.setAttribute('loading', 'lazy');
   });
+
+  /* Donation amount card -> reveal the custom-amount input when "Custom" is picked */
+  document.querySelectorAll('input[name="amount_option_id"]').forEach(function (radio) {
+    radio.addEventListener('change', function () {
+      var form = radio.closest('form');
+      var customInput = form && form.querySelector('[name="custom_amount"]');
+      if (!customInput) return;
+      if (radio.value === 'custom' && radio.checked) {
+        customInput.classList.remove('d-none');
+        customInput.required = true;
+        customInput.focus();
+      } else {
+        customInput.classList.add('d-none');
+        customInput.required = false;
+      }
+    });
+  });
+
+  /* One-click copy (bank account number, IFSC, UPI ID, ...) */
+  document.querySelectorAll('.copy-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var value = btn.getAttribute('data-copy-value') || '';
+      if (!value || !navigator.clipboard) return;
+      navigator.clipboard.writeText(value).then(function () {
+        var original = btn.textContent;
+        btn.textContent = 'Copied!';
+        btn.disabled = true;
+        setTimeout(function () { btn.textContent = original; btn.disabled = false; }, 1500);
+      });
+    });
+  });
 })();

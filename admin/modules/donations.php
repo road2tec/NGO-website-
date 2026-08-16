@@ -21,23 +21,51 @@ if ($action === 'mark_failed' && $id && $_SERVER['REQUEST_METHOD'] === 'POST') {
     redirect('admin/index.php?page=donations');
 }
 
-$statusFilter = get_param('status', 'pending');
-$where = $statusFilter !== 'all' ? "d.status=?" : "1=1";
-$params = $statusFilter !== 'all' ? [$statusFilter] : [];
+$statusFilter   = get_param('status', 'pending');
+$campaignFilter = (int) get_param('campaign_id');
+
+$conditions = [];
+$params = [];
+if ($statusFilter === 'crowdfunding') {
+    $conditions[] = 'd.campaign_id IS NOT NULL';
+    if ($campaignFilter) {
+        $conditions[] = 'd.campaign_id = ?';
+        $params[] = $campaignFilter;
+    }
+} elseif ($statusFilter !== 'all') {
+    $conditions[] = 'd.status = ?';
+    $params[] = $statusFilter;
+}
+$where = $conditions ? implode(' AND ', $conditions) : '1=1';
+
 $donations = Database::all("SELECT d.*, c.title AS campaign_title FROM donations d
                              LEFT JOIN campaigns c ON c.id = d.campaign_id
                              WHERE $where ORDER BY d.created_at DESC", $params);
 $totalReceived = (float) Database::value("SELECT COALESCE(SUM(amount),0) FROM donations WHERE status='received'");
+$allCampaigns = Database::all("SELECT id, title FROM campaigns ORDER BY title");
 ?>
 <div class="admin-card mb-3">
-  <div class="d-flex justify-content-between align-items-center">
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
     <div><span class="text-muted small">Total received</span><div class="fs-4 fw-bold text-green"><?= format_inr($totalReceived) ?></div></div>
-    <ul class="nav nav-pills">
-      <?php foreach (['pending'=>'Pending','received'=>'Received','failed'=>'Failed','all'=>'All'] as $k=>$label): ?>
+    <ul class="nav nav-pills flex-wrap">
+      <?php foreach (['pending'=>'Pending','received'=>'Received','failed'=>'Failed','crowdfunding'=>'Crowdfunding','all'=>'All'] as $k=>$label): ?>
         <li class="nav-item"><a class="nav-link <?= $statusFilter===$k?'active':'' ?>" href="<?= admin_url('index.php?page=donations&status=' . $k) ?>"><?= $label ?></a></li>
       <?php endforeach; ?>
     </ul>
   </div>
+  <?php if ($statusFilter === 'crowdfunding'): ?>
+  <form method="get" class="mt-3 d-flex align-items-center gap-2">
+    <input type="hidden" name="page" value="donations">
+    <input type="hidden" name="status" value="crowdfunding">
+    <label class="form-label small text-muted mb-0" for="campaign-filter">Program:</label>
+    <select class="form-select form-select-sm w-auto" id="campaign-filter" name="campaign_id" onchange="this.form.submit()">
+      <option value="">All crowdfunding programs</option>
+      <?php foreach ($allCampaigns as $c): ?>
+        <option value="<?= (int) $c['id'] ?>" <?= $campaignFilter === (int) $c['id'] ? 'selected' : '' ?>><?= e($c['title']) ?></option>
+      <?php endforeach; ?>
+    </select>
+  </form>
+  <?php endif; ?>
 </div>
 
 <div class="admin-card">
