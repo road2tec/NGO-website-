@@ -20,6 +20,40 @@ function asset(string $path): string
     return BASE_URL . '/assets/' . ltrim($path, '/');
 }
 
+/**
+ * Admin-entered links (banner buttons, homepage buttons, ...) can be an
+ * internal relative path ("donate") or a full external URL
+ * ("https://example.com"). Route both correctly and never render a
+ * javascript:/data:/vbscript: scheme.
+ */
+function is_external_url(string $link): bool
+{
+    $link = trim($link);
+    return $link !== '' && ((bool) preg_match('#^https?://#i', $link) || str_starts_with($link, '//'));
+}
+
+function is_unsafe_url_scheme(string $link): bool
+{
+    $lower = strtolower(trim($link));
+    foreach (['javascript:', 'data:', 'vbscript:'] as $scheme) {
+        if (str_starts_with($lower, $scheme)) return true;
+    }
+    return false;
+}
+
+function safe_link_url(string $link): string
+{
+    if (is_unsafe_url_scheme($link)) return '#';
+    return is_external_url($link) ? $link : url($link);
+}
+
+/** HTML attributes to append to an <a> tag so external links open safely in a new tab. */
+function link_target_attrs(string $link): string
+{
+    if (is_unsafe_url_scheme($link)) return '';
+    return is_external_url($link) ? ' target="_blank" rel="noopener noreferrer"' : '';
+}
+
 function upload_url(?string $path, string $fallback = 'images/placeholder.svg'): string
 {
     if (!empty($path) && file_exists(UPLOAD_DIR . '/' . $path)) {
@@ -158,6 +192,11 @@ function id_proof_types(): array
         'driving_licence' => 'Driving Licence',
         'pan_card'        => 'PAN Card',
     ];
+}
+
+function volunteer_availability_options(): array
+{
+    return ['Weekends', 'Weekdays', 'Only for Specific Event', 'Flexible'];
 }
 
 /* ---------------- Slugs ---------------- */

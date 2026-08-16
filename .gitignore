@@ -1,5 +1,8 @@
 /config/config.php
 
+# Deployment zips (contain the real config.php with live DB credentials)
+/*.zip
+
 # OS/editor cruft
 .DS_Store
 Thumbs.db

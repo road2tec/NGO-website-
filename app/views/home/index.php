@@ -14,7 +14,7 @@
               <p class="lead mb-4"><?= e($b['subtitle']) ?></p>
               <div class="d-flex flex-wrap gap-3">
                 <?php if ($b['button_link']): ?>
-                  <a href="<?= url($b['button_link']) ?>" class="btn btn-donate btn-lg"><?= e($b['button_text']) ?></a>
+                  <a href="<?= e(safe_link_url($b['button_link'])) ?>" class="btn btn-donate btn-lg"<?= link_target_attrs($b['button_link']) ?>><?= e($b['button_text']) ?></a>
                 <?php endif; ?>
                 <a href="<?= url('about') ?>" class="btn btn-outline-nav btn-lg">Our story</a>
               </div>
