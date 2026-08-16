@@ -24,7 +24,8 @@ See also: `SRS.md` (requirements), `INSTALL.md` (local/cPanel setup),
 
 ```
 /                        front controller (index.php), .htaccess, robots.txt, sitemap.php
-/config/config.php        DB credentials, base URL, session bootstrap  <-- edit this after upload
+/config/config.sample.php  template — copy to config.php and edit after upload
+/config/config.php        DB credentials, base URL, session bootstrap (gitignored, never commit)
 /app
   /core                   Database.php, Controller.php
   /controllers            one controller per nav area (Home, About, Membership, ...)
@@ -93,8 +94,8 @@ immediately** from Admin → Change Password after your first login.
 ## Quick start
 
 1. Import `database/ngo_website.sql` into a MySQL database.
-2. Edit `config/config.php` — set `DB_NAME`, `DB_USER`, `DB_PASS`,
-   `BASE_URL`.
+2. Copy `config/config.sample.php` to `config/config.php` and set
+   `DB_NAME`, `DB_USER`, `DB_PASS`, `BASE_URL`.
 3. Point your web server's document root at this folder (or upload
    everything to `public_html` / a subfolder on cPanel).
 4. Visit the site, then log into `/admin/` and change the password.

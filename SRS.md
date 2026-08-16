@@ -88,7 +88,8 @@ with foreign keys, seeded with realistic sample content). Entity summary:
 `project_images`, `events`, `event_registrations`, `gallery_albums`,
 `gallery_items`, `campaigns`, `donations`, `sponsors`, `documents`,
 `testimonials`, `news`, `contact_messages`, `volunteers`,
-`newsletter_subscribers`.
+`newsletter_subscribers`, `states`, `districts`, `talukas` (location
+master data — see `database/migrations/001_add_locations.sql`).
 
 ### 7. Architecture
 Custom lightweight MVC (no framework):

@@ -1,0 +1,5 @@
+/config/config.php
+
+# OS/editor cruft
+.DS_Store
+Thumbs.db

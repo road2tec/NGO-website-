@@ -1,12 +1,14 @@
 <?php
 /**
  * ------------------------------------------------------------------
- *  NGO Website - Main Configuration
- *  Edit the values below after uploading to your hosting.
+ *  NGO Website - Main Configuration (SAMPLE)
+ *  Copy this file to config.php and edit the values below after
+ *  uploading to your hosting. config.php is gitignored on purpose —
+ *  never commit real database credentials.
  * ------------------------------------------------------------------
  */
 
-// ---- Database credentials (from cPanel > MySQL Databases) ----
+// ---- Database credentials (from cPanel/hPanel > MySQL Databases) ----
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'ngo_website');
 define('DB_USER', 'root');

@@ -30,6 +30,11 @@ function upload_url(?string $path, string $fallback = 'images/placeholder.svg'):
 
 function redirect(string $path): void
 {
+    // Discard any buffered output (e.g. the admin layout's ob_start() wrapper)
+    // so a mid-page redirect doesn't also ship a half-rendered body.
+    if (ob_get_level() > 0) {
+        ob_end_clean();
+    }
     header('Location: ' . url($path));
     exit;
 }
@@ -82,6 +87,9 @@ function csrf_verify(): bool
 function require_csrf(): void
 {
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && !csrf_verify()) {
+        if (ob_get_level() > 0) {
+            ob_end_clean();
+        }
         http_response_code(419);
         die('Security check failed (invalid CSRF token). Please go back and try again.');
     }
@@ -267,6 +275,53 @@ function pagination_links(array $p, string $baseUrl): string
                . e($baseUrl . $sep . 'pg=' . $i) . '">' . $i . '</a></li>';
     }
     return $html . '</ul></nav>';
+}
+
+/* ---------------- Location (state / district / taluka) ---------------- */
+/** Active states for the initial dropdown. */
+function location_states(): array
+{
+    return Database::all("SELECT id, name FROM states WHERE status='active' ORDER BY sort_order, name");
+}
+
+/** Active districts belonging to one state (used by both the AJAX endpoint and server-side rendering). */
+function location_districts(int $stateId): array
+{
+    return Database::all(
+        "SELECT id, name FROM districts WHERE state_id=? AND status='active' ORDER BY sort_order, name",
+        [$stateId]
+    );
+}
+
+/** Active talukas belonging to one district. */
+function location_talukas(int $districtId): array
+{
+    return Database::all(
+        "SELECT id, name FROM talukas WHERE district_id=? AND status='active' ORDER BY sort_order, name",
+        [$districtId]
+    );
+}
+
+/**
+ * Server-side trust boundary: never accept a district/taluka id from a form
+ * without confirming it actually belongs to the submitted parent. Prevents
+ * a tampered POST (e.g. state_id=1 with a district_id from another state)
+ * from being saved as a valid combination.
+ */
+function location_district_belongs_to_state(int $districtId, int $stateId): bool
+{
+    return (bool) Database::value(
+        "SELECT COUNT(*) FROM districts WHERE id=? AND state_id=? AND status='active'",
+        [$districtId, $stateId]
+    );
+}
+
+function location_taluka_belongs_to_district(int $talukaId, int $districtId): bool
+{
+    return (bool) Database::value(
+        "SELECT COUNT(*) FROM talukas WHERE id=? AND district_id=? AND status='active'",
+        [$talukaId, $districtId]
+    );
 }
 
 /* ---------------- IDs & codes ---------------- */

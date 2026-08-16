@@ -33,6 +33,9 @@ $currentPage = get_param('page', 'dashboard');
       <div class="nav-group-title">Membership</div>
       <a href="<?= admin_url('index.php?page=members') ?>" class="<?= $currentPage==='members'?'active':'' ?>"><i class="fa-solid fa-id-card"></i>Members</a>
       <a href="<?= admin_url('index.php?page=membership_categories') ?>" class="<?= $currentPage==='membership_categories'?'active':'' ?>"><i class="fa-solid fa-layer-group"></i>Membership Categories</a>
+      <?php if (($admin['role'] ?? '') === 'superadmin'): ?>
+      <a href="<?= admin_url('index.php?page=locations') ?>" class="<?= $currentPage==='locations'?'active':'' ?>"><i class="fa-solid fa-map-location-dot"></i>Location Master Data</a>
+      <?php endif; ?>
 
       <div class="nav-group-title">Programs</div>
       <a href="<?= admin_url('index.php?page=projects') ?>" class="<?= $currentPage==='projects'?'active':'' ?>"><i class="fa-solid fa-diagram-project"></i>Projects</a>

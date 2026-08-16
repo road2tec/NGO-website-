@@ -21,8 +21,13 @@
 - [ ] Create the MySQL database + user in cPanel → MySQL Databases, grant
       **All Privileges**.
 - [ ] Import `database/ngo_website.sql` via phpMyAdmin.
-- [ ] Edit `config/config.php`: `DB_NAME`, `DB_USER`, `DB_PASS`,
-      `BASE_URL`, and set `APP_ENV` to `'production'`.
+- [ ] Import each file in `database/migrations/` **in filename order**
+      (currently just `001_add_locations.sql`, adding the location
+      dropdown master data) — see `database/migrations/README.md`.
+- [ ] Copy `config/config.sample.php` to `config/config.php` (it's
+      gitignored, so it does not come from git) and edit: `DB_NAME`,
+      `DB_USER`, `DB_PASS`, `BASE_URL`, and set `APP_ENV` to
+      `'production'`.
 
 ## 3. SSL / HTTPS
 - [ ] In cPanel → SSL/TLS Status, enable **AutoSSL** (Let's Encrypt) for

@@ -9,7 +9,9 @@
    (collation `utf8mb4_general_ci` or `utf8mb4_unicode_ci`).
 4. Open the new database → **Import** → choose
    `database/ngo_website.sql` → Go.
-5. Edit `config/config.php`:
+5. Copy `config/config.sample.php` to `config/config.php` (this file is
+   gitignored — it holds real credentials and must never be committed),
+   then edit it:
    ```php
    define('DB_HOST', 'localhost');
    define('DB_NAME', 'ngo_website');
@@ -45,7 +47,9 @@ Short version:
 3. **Upload files**: zip the project folder's *contents* (not the folder
    itself) and upload via cPanel File Manager to `public_html` (root
    domain) or `public_html/your-subfolder` (subfolder/addon domain), then
-   extract.
+   extract. `config/config.php` is gitignored, so it will NOT come from
+   git — copy `config/config.sample.php` to `config/config.php` on the
+   server (or upload it directly) instead.
 4. **Configure**: edit `config/config.php` via File Manager's code editor:
    - `DB_HOST` — usually stays `localhost` on shared hosting
    - `DB_NAME`, `DB_USER`, `DB_PASS` — from step 1

@@ -1,6 +1,11 @@
 -- =====================================================================
 --  NGO Website - MySQL 8 schema + seed data
 --  Import via cPanel > phpMyAdmin > Import, or:  mysql -u user -p db < ngo_website.sql
+--
+--  After importing this file, also run database/migrations/*.sql in
+--  filename order (see database/migrations/README.md) to pick up
+--  location master data (states/districts/talukas) and any later
+--  schema changes.
 -- =====================================================================
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS
