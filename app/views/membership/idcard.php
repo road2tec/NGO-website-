@@ -4,11 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Member ID Card - <?= e($member['name']) ?></title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="<?= asset('css/style.css') ?>" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
 <style>
   body { background:#eef3f9; padding:2rem 1rem; }
   .actions { max-width:340px; margin:1rem auto 0; }
+  .id-card { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  @media print {
+    body { background: #fff; padding: 0; }
+  }
 </style>
 </head>
 <body>
@@ -27,11 +32,13 @@
       <h5 class="fw-bold mb-0 mt-2"><?= e($member['name']) ?></h5>
       <div class="small text-blue fw-bold mb-2"><?= e($member['member_no']) ?></div>
       <table class="table table-sm table-borderless text-start small mb-2">
+        <tr><th class="text-muted">Category</th><td><?= e($category['name'] ?? 'General Member') ?></td></tr>
         <tr><th class="text-muted">Blood Group</th><td><?= e($member['blood_group'] ?: '-') ?></td></tr>
         <tr><th class="text-muted">Phone</th><td><?= e($member['phone']) ?></td></tr>
         <tr><th class="text-muted">Valid Till</th><td><?= $member['valid_till'] ? format_date($member['valid_till']) : 'Lifetime/Renewal pending' ?></td></tr>
       </table>
       <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=<?= urlencode($member['member_no'] . '|' . $member['email']) ?>" alt="QR code" width="90" height="90">
+      <div class="small text-muted mt-1">Scan to verify member details</div>
     </div>
     <div class="seva-band"></div>
   </div>

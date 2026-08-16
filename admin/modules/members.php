@@ -28,6 +28,18 @@ if ($action === 'delete' && $id && $_SERVER['REQUEST_METHOD'] === 'POST') {
     flash_set('success', 'Member record deleted.');
     redirect('admin/index.php?page=members');
 }
+if ($action === 'notify' && $id && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_csrf();
+    $title = post('title');
+    $message = post('message');
+    if ($title === '' || $message === '') {
+        flash_set('error', 'Notification title and message are both required.');
+    } else {
+        Database::insert('member_notifications', ['member_id' => $id, 'title' => $title, 'message' => $message]);
+        flash_set('success', 'Notification sent.');
+    }
+    redirect('admin/index.php?page=members');
+}
 
 $statusFilter = get_param('status', 'pending');
 $where = $statusFilter !== 'all' ? "m.status=?" : "1=1";
@@ -87,6 +99,7 @@ $idProofLabels = id_proof_types();
             <?php if ($m['status'] !== 'rejected'): ?>
             <form method="post" action="<?= admin_url('index.php?page=members&action=reject&id=' . $m['id']) ?>" class="d-inline"><?= csrf_field() ?><button class="btn btn-sm btn-outline-danger">Reject</button></form>
             <?php endif; ?>
+            <button type="button" class="btn btn-sm btn-outline-nav" data-bs-toggle="modal" data-bs-target="#notifyModal-<?= $m['id'] ?>" title="Send notification"><i class="fa-solid fa-bell"></i></button>
             <form method="post" action="<?= admin_url('index.php?page=members&action=delete&id=' . $m['id']) ?>" class="d-inline" onsubmit="return confirm('Delete this member record permanently?');"><?= csrf_field() ?><button class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-trash"></i></button></form>
           </td>
         </tr>
@@ -96,3 +109,53 @@ $idProofLabels = id_proof_types();
     </table>
   </div>
 </div>
+
+<?php foreach ($members as $m): ?>
+<div class="modal fade" id="notifyModal-<?= $m['id'] ?>" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="<?= admin_url('index.php?page=members&action=notify&id=' . $m['id']) ?>">
+        <?= csrf_field() ?>
+        <div class="modal-header">
+          <h5 class="modal-title">Send notification to <?= e($m['name']) ?></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="notify-edit">
+            <div class="mb-3"><label class="form-label">Title</label><input class="form-control notify-title-input" name="title" maxlength="150" required></div>
+            <div class="mb-3"><label class="form-label">Message</label><textarea class="form-control notify-message-input" name="message" rows="4" required></textarea></div>
+          </div>
+          <div class="notify-preview d-none">
+            <p class="small text-muted mb-1">Preview - exactly what <?= e($m['name']) ?> will see on their dashboard:</p>
+            <div class="border rounded p-3">
+              <h6 class="fw-bold notify-preview-title"></h6>
+              <p class="mb-0 notify-preview-message" style="white-space:pre-wrap;"></p>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-nav btn-notify-preview">Preview</button>
+          <button type="submit" class="btn btn-blue d-none btn-notify-confirm">Confirm &amp; Send</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<?php endforeach; ?>
+
+<script>
+document.addEventListener('click', function (e) {
+  var previewBtn = e.target.closest('.btn-notify-preview');
+  if (!previewBtn) return;
+  var modal = previewBtn.closest('.modal');
+  var title = modal.querySelector('.notify-title-input').value.trim();
+  var message = modal.querySelector('.notify-message-input').value.trim();
+  if (!title || !message) return;
+  modal.querySelector('.notify-preview-title').textContent = title;
+  modal.querySelector('.notify-preview-message').textContent = message;
+  modal.querySelector('.notify-edit').classList.add('d-none');
+  modal.querySelector('.notify-preview').classList.remove('d-none');
+  previewBtn.classList.add('d-none');
+  modal.querySelector('.btn-notify-confirm').classList.remove('d-none');
+});
+</script>

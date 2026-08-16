@@ -25,6 +25,12 @@
             <?php if ($member['status'] === 'approved'): ?>
               <a href="<?= url('membership/idcard') ?>" class="btn btn-blue">Download ID Card</a>
             <?php endif; ?>
+            <a href="<?= url('membership/notifications') ?>" class="btn btn-outline-nav position-relative">
+              Notifications
+              <?php if ($unreadCount > 0): ?>
+                <span class="badge rounded-pill bg-danger ms-1"><?= (int) $unreadCount ?></span>
+              <?php endif; ?>
+            </a>
             <a href="<?= url('membership/logout') ?>" class="btn btn-outline-nav">Log out</a>
           </div>
         </div>

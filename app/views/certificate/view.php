@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Certificate of Participation - <?= e($reg['name']) ?></title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="<?= asset('css/style.css') ?>" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&family=Mulish&display=swap" rel="stylesheet">
 <style>
@@ -21,6 +22,10 @@
   .cert .meta { color: var(--muted); }
   .cert .sign { display:flex; justify-content:space-between; margin-top: 3rem; }
   .actions { max-width:340px; margin:1.4rem auto 0; }
+  .cert { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  @media print {
+    body { background: #fff; padding: 0; }
+  }
 </style>
 </head>
 <body>

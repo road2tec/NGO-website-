@@ -187,6 +187,79 @@ class MembershipController extends Controller
         redirect('membership/login');
     }
 
+    /** Request a password-reset email. Never reveals whether the email is registered. */
+    public function forgot(): void
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            require_csrf();
+            if (!captcha_verify()) {
+                flash_set('error', 'Captcha answer was wrong.');
+                redirect('membership/forgot');
+            }
+            $email = post('email');
+            $member = valid_email($email) ? Database::one("SELECT id FROM members WHERE email=?", [$email]) : null;
+            if ($member) {
+                // simple rate limit: at most one new token every 2 minutes per member
+                $recent = (int) Database::value(
+                    "SELECT COUNT(*) FROM password_reset_tokens WHERE member_id=? AND created_at > (NOW() - INTERVAL 2 MINUTE)",
+                    [$member['id']]
+                );
+                if ($recent === 0) {
+                    Database::update('password_reset_tokens', ['used_at' => date('Y-m-d H:i:s')], 'member_id=? AND used_at IS NULL', [$member['id']]);
+                    $rawToken = bin2hex(random_bytes(32));
+                    Database::insert('password_reset_tokens', [
+                        'member_id'  => $member['id'],
+                        'token_hash' => hash('sha256', $rawToken),
+                        'expires_at' => date('Y-m-d H:i:s', time() + 3600),
+                    ]);
+                    $resetLink = url('membership/reset/' . $rawToken);
+                    @mail($email, 'Reset your password - ' . setting('site_name'),
+                        "Hello,\n\nWe received a request to reset your membership account password.\n\n"
+                        . "Click the link below to set a new password. This link is valid for 1 hour and can only be used once.\n\n"
+                        . "$resetLink\n\nIf you did not request this, you can safely ignore this email.\n\n"
+                        . setting('site_name'));
+                }
+            }
+            flash_set('success', 'If that email is registered, a password reset link has been sent. Please check your inbox.');
+            redirect('membership/login');
+        }
+        $this->render('membership/forgot', [
+            'pageTitle' => 'Forgot Password',
+            'captcha'   => captcha_question(),
+        ]);
+    }
+
+    /** Reset via a single-use, expiring token from the forgot-password email. */
+    public function reset(?string $token = null): void
+    {
+        if (!$token) $this->notFound('Invalid password reset link.');
+        $row = Database::one(
+            "SELECT * FROM password_reset_tokens WHERE token_hash=? AND used_at IS NULL AND expires_at > NOW()",
+            [hash('sha256', $token)]
+        );
+        if (!$row) {
+            flash_set('error', 'This password reset link is invalid or has expired. Please request a new one.');
+            redirect('membership/forgot');
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            require_csrf();
+            if (strlen(post('password')) < 6) {
+                flash_set('error', 'Password must be at least 6 characters.');
+            } elseif (post('password') !== post('password2')) {
+                flash_set('error', 'Passwords do not match.');
+            } else {
+                Database::update('members', ['password' => password_hash(post('password'), PASSWORD_DEFAULT)], 'id=?', [$row['member_id']]);
+                Database::update('password_reset_tokens', ['used_at' => date('Y-m-d H:i:s')], 'id=?', [$row['id']]);
+                flash_set('success', 'Your password has been reset. Please log in with your new password.');
+                redirect('membership/login');
+            }
+            redirect('membership/reset/' . $token);
+        }
+
+        $this->render('membership/reset', ['pageTitle' => 'Reset Password', 'token' => $token]);
+    }
+
     public function status(): void
     {
         $this->login();
@@ -196,11 +269,26 @@ class MembershipController extends Controller
     {
         $member = $this->requireMember();
         $this->render('membership/dashboard', [
-            'pageTitle' => 'Member Dashboard',
-            'member'    => $member,
-            'category'  => $member['category_id']
+            'pageTitle'    => 'Member Dashboard',
+            'member'       => $member,
+            'category'     => $member['category_id']
                 ? Database::one("SELECT * FROM membership_categories WHERE id=?", [$member['category_id']])
                 : null,
+            'unreadCount'  => (int) Database::value("SELECT COUNT(*) FROM member_notifications WHERE member_id=? AND is_read=0", [$member['id']]),
+        ]);
+    }
+
+    /** Notification inbox; opening it marks everything as read. */
+    public function notifications(): void
+    {
+        $member = $this->requireMember();
+        $notifications = Database::all(
+            "SELECT * FROM member_notifications WHERE member_id=? ORDER BY created_at DESC", [$member['id']]
+        );
+        Database::update('member_notifications', ['is_read' => 1], 'member_id=? AND is_read=0', [$member['id']]);
+        $this->render('membership/notifications', [
+            'pageTitle'     => 'Notifications',
+            'notifications' => $notifications,
         ]);
     }
 
@@ -212,7 +300,10 @@ class MembershipController extends Controller
             flash_set('info', 'Your ID card will be available once the admin approves your membership. Current status: ' . $member['status'] . '.');
             redirect('membership/dashboard');
         }
-        $this->renderBare('membership/idcard', ['member' => $member]);
+        $category = $member['category_id']
+            ? Database::one("SELECT name FROM membership_categories WHERE id=?", [$member['category_id']])
+            : null;
+        $this->renderBare('membership/idcard', ['member' => $member, 'category' => $category]);
     }
 
     private function requireMember(): array
