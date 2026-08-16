@@ -77,13 +77,13 @@ $selectedDistrict = $districtId ? Database::one("SELECT * FROM districts WHERE i
       <div class="d-flex justify-content-between align-items-center mb-3">
         <h6 class="fw-bold mb-0">States / UTs (<?= count($states) ?>)</h6>
       </div>
-      <form method="post" class="row g-2 mb-3">
+      <form method="post" class="d-flex flex-wrap gap-2 mb-3">
         <?= csrf_field() ?>
         <input type="hidden" name="do" value="save">
         <input type="hidden" name="level" value="state">
-        <div class="col-7"><input class="form-control form-control-sm" name="name" placeholder="New state/UT name" required></div>
-        <div class="col-3"><input class="form-control form-control-sm" name="code" placeholder="Code" maxlength="10"></div>
-        <div class="col-2"><button class="btn btn-sm btn-blue w-100">Add</button></div>
+        <input class="form-control form-control-sm flex-grow-1" style="min-width:9rem" name="name" placeholder="New state/UT name" required>
+        <input class="form-control form-control-sm" style="width:5rem" name="code" placeholder="Code" maxlength="10">
+        <button class="btn btn-sm btn-blue flex-shrink-0">Add</button>
       </form>
       <div class="table-responsive" style="max-height:520px;overflow-y:auto;">
         <table class="table table-admin align-middle table-sm">
@@ -120,15 +120,15 @@ $selectedDistrict = $districtId ? Database::one("SELECT * FROM districts WHERE i
       <?php if (!$selectedState): ?>
         <p class="text-muted small">Select a state to view/manage its districts.</p>
       <?php else: ?>
-        <form method="post" class="row g-2 mb-3">
+        <form method="post" class="d-flex flex-wrap gap-2 mb-3">
           <?= csrf_field() ?>
           <input type="hidden" name="do" value="save">
           <input type="hidden" name="level" value="district">
           <input type="hidden" name="state_id" value="<?= (int) $stateId ?>">
           <input type="hidden" name="redirect_state" value="<?= (int) $stateId ?>">
-          <div class="col-7"><input class="form-control form-control-sm" name="name" placeholder="New district name" required></div>
-          <div class="col-3"><input class="form-control form-control-sm" name="code" placeholder="Code" maxlength="10"></div>
-          <div class="col-2"><button class="btn btn-sm btn-blue w-100">Add</button></div>
+          <input class="form-control form-control-sm flex-grow-1" style="min-width:9rem" name="name" placeholder="New district name" required>
+          <input class="form-control form-control-sm" style="width:5rem" name="code" placeholder="Code" maxlength="10">
+          <button class="btn btn-sm btn-blue flex-shrink-0">Add</button>
         </form>
         <div class="table-responsive" style="max-height:480px;overflow-y:auto;">
           <table class="table table-admin align-middle table-sm">
@@ -167,16 +167,16 @@ $selectedDistrict = $districtId ? Database::one("SELECT * FROM districts WHERE i
       <?php if (!$selectedDistrict): ?>
         <p class="text-muted small">Select a district to view/manage its talukas.</p>
       <?php else: ?>
-        <form method="post" class="row g-2 mb-3">
+        <form method="post" class="d-flex flex-wrap gap-2 mb-3">
           <?= csrf_field() ?>
           <input type="hidden" name="do" value="save">
           <input type="hidden" name="level" value="taluka">
           <input type="hidden" name="district_id" value="<?= (int) $districtId ?>">
           <input type="hidden" name="redirect_state" value="<?= (int) $stateId ?>">
           <input type="hidden" name="redirect_district" value="<?= (int) $districtId ?>">
-          <div class="col-7"><input class="form-control form-control-sm" name="name" placeholder="New taluka name" required></div>
-          <div class="col-3"><input class="form-control form-control-sm" name="code" placeholder="Code" maxlength="10"></div>
-          <div class="col-2"><button class="btn btn-sm btn-blue w-100">Add</button></div>
+          <input class="form-control form-control-sm flex-grow-1" style="min-width:9rem" name="name" placeholder="New taluka name" required>
+          <input class="form-control form-control-sm" style="width:5rem" name="code" placeholder="Code" maxlength="10">
+          <button class="btn btn-sm btn-blue flex-shrink-0">Add</button>
         </form>
         <div class="table-responsive" style="max-height:480px;overflow-y:auto;">
           <table class="table table-admin align-middle table-sm">

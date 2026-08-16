@@ -25,8 +25,11 @@
 .table-admin th, .table-admin td { vertical-align: middle; padding: .75rem 1rem; }
 .thumb-sm { width:44px; height:44px; border-radius:8px; object-fit:cover; background: var(--blue-soft); }
 
+.admin-sidebar-toggle { display: none; }
+
 @media (max-width: 900px) {
   .admin-sidebar { position: fixed; left: -260px; z-index: 1050; transition: left .2s ease; height:100vh; }
   .admin-sidebar.open { left: 0; }
   .admin-main { width: 100%; }
+  .admin-sidebar-toggle { display: inline-flex; }
 }

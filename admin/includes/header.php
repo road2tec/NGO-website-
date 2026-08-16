@@ -61,7 +61,7 @@ $currentPage = get_param('page', 'dashboard');
 
   <div class="admin-main">
     <div class="admin-topbar">
-      <button class="btn btn-outline-nav d-md-none" onclick="document.getElementById('adminSidebar').classList.toggle('open')"><i class="fa-solid fa-bars"></i></button>
+      <button class="btn btn-outline-nav admin-sidebar-toggle" onclick="document.getElementById('adminSidebar').classList.toggle('open')"><i class="fa-solid fa-bars"></i></button>
       <h5 class="fw-bold mb-0"><?= e($pageTitle ?? 'Dashboard') ?></h5>
       <div class="d-flex align-items-center gap-2">
         <a href="<?= url('') ?>" target="_blank" class="btn btn-outline-nav btn-sm"><i class="fa-solid fa-arrow-up-right-from-square me-1"></i>View site</a>
