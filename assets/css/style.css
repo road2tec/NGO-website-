@@ -65,6 +65,10 @@ img { max-width: 100%; }
 .translate-slot { min-height: 24px; }
 .translate-slot .goog-te-gadget { font-size: 0; }
 .translate-slot .goog-te-gadget .goog-te-combo { font-size: .78rem; border-radius: 6px; padding: 1px 4px; }
+/* Google Translate injects its own top banner iframe + pushes <body> down when a
+   language is picked - hide the banner and cancel the offset it forces inline. */
+.goog-te-banner-frame.skiptranslate { display: none !important; }
+body { top: 0 !important; }
 
 /* ---------------- Navbar ---------------- */
 .site-nav { background: #fff; box-shadow: 0 2px 18px rgba(15, 50, 95, .07); padding: .55rem 0; }
@@ -174,6 +178,22 @@ img { max-width: 100%; }
 .form-card .form-control:focus, .form-card .form-select:focus { border-color: var(--blue); box-shadow: 0 0 0 .2rem rgba(20,84,156,.12); }
 label.form-label { font-weight: 700; font-size: .9rem; }
 
+/* ---------------- CAPTCHA ---------------- */
+.captcha-widget { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; }
+.captcha-image-wrap {
+  position: relative; display: inline-flex; flex-shrink: 0; line-height: 0;
+  border-radius: 10px; overflow: hidden; border: 1px solid #d8e3f0; box-shadow: var(--shadow-soft);
+}
+.captcha-refresh-btn {
+  position: absolute; top: 6px; right: 6px; width: 26px; height: 26px; padding: 0;
+  border: 0; border-radius: 50%; background: #fff; color: var(--blue);
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  box-shadow: var(--shadow-soft); font-size: .75rem; transition: transform .2s ease;
+}
+.captcha-refresh-btn:hover { transform: rotate(90deg); }
+.captcha-refresh-btn:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.captcha-widget .captcha-input { flex: 1 1 160px; min-width: 140px; text-transform: uppercase; letter-spacing: .08em; }
+
 /* ---------------- Floating donate ---------------- */
 .floating-donate {
   position: fixed; right: 18px; bottom: 18px; z-index: 1500;
@@ -185,6 +205,12 @@ label.form-label { font-weight: 700; font-size: .9rem; }
 }
 .floating-donate:hover { color: #fff; background: #de6316; }
 @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+/* The sticky header already carries an always-visible "Donate Now" button on desktop
+   (>= the navbar-expand-lg breakpoint) - showing this too is pure duplication there.
+   On mobile that header CTA is hidden inside the collapsed menu, so keep it there. */
+@media (min-width: 992px) {
+  .floating-donate { display: none; }
+}
 
 /* ---------------- Footer ---------------- */
 .site-footer { background: #0A2C55; color: #c6d7ec; margin-top: 4rem; }
@@ -217,7 +243,7 @@ label.form-label { font-weight: 700; font-size: .9rem; }
 .doc-icon { width: 46px; height: 46px; border-radius: 12px; background: var(--orange-soft); color: #b4520f; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
 
 /* ---------------- QR / print cards ---------------- */
-.id-card { width: 340px; border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-lift); background: #fff; margin: 0 auto; }
+.id-card { width: 340px; max-width: 100%; border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-lift); background: #fff; margin: 0 auto; }
 .id-card .id-head { background: linear-gradient(120deg, var(--blue-deep), var(--blue)); color: #fff; padding: .9rem 1rem; text-align: center; }
 .id-card .seva-band { height: 4px; }
 

@@ -37,6 +37,17 @@
   </div>
 </section>
 
+<?php if ($homeButtons): ?>
+<!-- ================= HOMEPAGE CUSTOM BUTTONS ================= -->
+<section class="py-4 bg-mist">
+  <div class="container d-flex flex-wrap justify-content-center gap-3">
+    <?php foreach ($homeButtons as $btn): ?>
+      <a href="<?= e(safe_link_url($btn['url'])) ?>" class="btn <?= $btn['style'] === 'primary' ? 'btn-blue' : 'btn-outline-nav' ?>"<?= link_target_attrs($btn['url']) ?>><?= e($btn['label']) ?></a>
+    <?php endforeach; ?>
+  </div>
+</section>
+<?php endif; ?>
+
 <!-- ================= STATS ================= -->
 <section class="stats-strip py-5">
   <div class="container">
@@ -332,8 +343,7 @@
                 <input class="form-control" id="eq-phone" name="phone">
               </div>
               <div class="col-md-6">
-                <label class="form-label" for="eq-cap"><?= e($captcha ?? captcha_question()) ?></label>
-                <input class="form-control" id="eq-cap" name="captcha" required>
+                <?php $captchaFieldId = 'eq-cap'; require __DIR__ . '/../layouts/captcha_field.php'; ?>
               </div>
               <div class="col-12">
                 <label class="form-label" for="eq-msg">Message</label>

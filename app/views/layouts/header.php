@@ -124,6 +124,7 @@ $canonical = BASE_URL . '/' . trim($_GET['url'] ?? '', '/');
             <li><a class="dropdown-item" href="<?= url('about/achievements') ?>">Achievements</a></li>
             <li><a class="dropdown-item" href="<?= url('about/certificates') ?>">Certificates</a></li>
             <li><a class="dropdown-item" href="<?= url('documents') ?>">Documents</a></li>
+            <li><a class="dropdown-item" href="<?= url('careers') ?>">Careers</a></li>
           </ul>
         </li>
         <li class="nav-item"><a class="nav-link" href="<?= url('contact') ?>">Contact Us</a></li>

@@ -22,6 +22,7 @@ $currentPage = get_param('page', 'dashboard');
 
       <div class="nav-group-title">Website Content</div>
       <a href="<?= admin_url('index.php?page=banners') ?>" class="<?= $currentPage==='banners'?'active':'' ?>"><i class="fa-solid fa-panorama"></i>Homepage Banners</a>
+      <a href="<?= admin_url('index.php?page=homepage_buttons') ?>" class="<?= $currentPage==='homepage_buttons'?'active':'' ?>"><i class="fa-solid fa-link"></i>Homepage Buttons</a>
       <a href="<?= admin_url('index.php?page=about') ?>" class="<?= $currentPage==='about'?'active':'' ?>"><i class="fa-solid fa-circle-info"></i>About Sections</a>
       <a href="<?= admin_url('index.php?page=people') ?>" class="<?= $currentPage==='people'?'active':'' ?>"><i class="fa-solid fa-users"></i>Board &amp; Team</a>
       <a href="<?= admin_url('index.php?page=achievements') ?>" class="<?= $currentPage==='achievements'?'active':'' ?>"><i class="fa-solid fa-award"></i>Achievements</a>
@@ -52,6 +53,12 @@ $currentPage = get_param('page', 'dashboard');
       <a href="<?= admin_url('index.php?page=volunteers') ?>" class="<?= $currentPage==='volunteers'?'active':'' ?>"><i class="fa-solid fa-hand-fist"></i>Volunteers</a>
       <a href="<?= admin_url('index.php?page=contacts') ?>" class="<?= $currentPage==='contacts'?'active':'' ?>"><i class="fa-solid fa-envelope-open-text"></i>Contact Messages</a>
       <a href="<?= admin_url('index.php?page=newsletter') ?>" class="<?= $currentPage==='newsletter'?'active':'' ?>"><i class="fa-solid fa-paper-plane"></i>Newsletter</a>
+
+      <div class="nav-group-title">Careers</div>
+      <a href="<?= admin_url('index.php?page=jobs') ?>" class="<?= $currentPage==='jobs'?'active':'' ?>"><i class="fa-solid fa-briefcase"></i>Jobs</a>
+      <a href="<?= admin_url('index.php?page=job_categories') ?>" class="<?= $currentPage==='job_categories'?'active':'' ?>"><i class="fa-solid fa-layer-group"></i>Job Categories</a>
+      <a href="<?= admin_url('index.php?page=job_subcategories') ?>" class="<?= $currentPage==='job_subcategories'?'active':'' ?>"><i class="fa-solid fa-sitemap"></i>Job Subcategories</a>
+      <a href="<?= admin_url('index.php?page=job_applications') ?>" class="<?= $currentPage==='job_applications'?'active':'' ?>"><i class="fa-solid fa-file-signature"></i>Applications</a>
 
       <div class="nav-group-title">System</div>
       <a href="<?= admin_url('index.php?page=settings') ?>" class="<?= $currentPage==='settings'?'active':'' ?>"><i class="fa-solid fa-gears"></i>Website Settings</a>

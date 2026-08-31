@@ -9,7 +9,7 @@
   <div class="container">
     <div class="row justify-content-center">
       <div class="col-md-6 col-lg-5">
-        <div class="form-card text-center" data-aos="fade-up">
+        <div class="form-card text-center">
           <span class="brand-mark d-inline-flex mb-3"><i class="fa-solid fa-hands-holding-child"></i></span>
           <h5 class="fw-bold mb-1">Welcome back</h5>
           <p class="text-muted small mb-4">Log in with the email and password you used while applying for membership to check your status, download your ID card, and view notifications.</p>

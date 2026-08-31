@@ -134,8 +134,7 @@
                 <input type="password" class="form-control" id="mem-pass2" name="password2" minlength="6" required>
               </div>
               <div class="col-md-6">
-                <label class="form-label" for="mem-cap"><?= e($captcha) ?></label>
-                <input class="form-control" id="mem-cap" name="captcha" required>
+                <?php $captchaFieldId = 'mem-cap'; require __DIR__ . '/../layouts/captcha_field.php'; ?>
               </div>
               <div class="col-12">
                 <div class="form-check">

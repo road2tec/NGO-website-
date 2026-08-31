@@ -16,6 +16,7 @@ $tableFor = ['state' => 'states', 'district' => 'districts', 'taluka' => 'taluka
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && post('do') === 'save' && isset($tableFor[$level])) {
     require_csrf();
     $table = $tableFor[$level];
+    $saveId = (int) post('id');
     $name  = post('name');
     $code  = post('code') ?: null;
     if ($name === '') {
@@ -25,8 +26,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && post('do') === 'save' && isset($tab
         if ($level === 'district') $data['state_id'] = (int) post('state_id');
         if ($level === 'taluka')   $data['district_id'] = (int) post('district_id');
         try {
-            if ($id) {
-                Database::update($table, $data, 'id=?', [$id]);
+            if ($saveId) {
+                Database::update($table, $data, 'id=?', [$saveId]);
                 flash_set('success', ucfirst($level) . ' updated.');
             } else {
                 $data['sort_order'] = 1 + (int) Database::value("SELECT MAX(sort_order) FROM `$table`");
@@ -56,6 +57,16 @@ if ($action === 'toggle' && $id && isset($tableFor[$level]) && $_SERVER['REQUEST
 $stateId    = (int) get_param('state_id');
 $districtId = (int) get_param('district_id');
 
+// Which row (if any) is currently being edited, per level - all three can
+// coexist on this one page, so each level tracks its own edit target.
+$editLevel = get_param('edit_level');
+$editId    = (int) get_param('edit_id');
+$editingState    = ($editLevel === 'state' && $editId)    ? Database::one("SELECT * FROM states WHERE id=?", [$editId]) : null;
+$editingDistrict = ($editLevel === 'district' && $editId) ? Database::one("SELECT * FROM districts WHERE id=?", [$editId]) : null;
+$editingTaluka   = ($editLevel === 'taluka' && $editId)   ? Database::one("SELECT * FROM talukas WHERE id=?", [$editId]) : null;
+
+$returnQs = ($stateId ? '&state_id=' . $stateId : '') . ($districtId ? '&district_id=' . $districtId : '');
+
 $states = Database::all("SELECT s.*, (SELECT COUNT(*) FROM districts d WHERE d.state_id=s.id) AS district_count
                           FROM states s ORDER BY s.sort_order, s.name");
 $districts = $stateId ? Database::all(
@@ -69,7 +80,7 @@ $talukas = $districtId ? Database::all(
 $selectedState    = $stateId ? Database::one("SELECT * FROM states WHERE id=?", [$stateId]) : null;
 $selectedDistrict = $districtId ? Database::one("SELECT * FROM districts WHERE id=?", [$districtId]) : null;
 ?>
-<p class="text-muted small mb-4">Master data behind the State &rarr; District &rarr; Taluka dropdowns used on the membership form. Deactivating a location hides it from public dropdowns without deleting historical member records that reference it.</p>
+<p class="text-muted small mb-4">Master data behind the State &rarr; District &rarr; Taluka dropdowns used on the membership form. Deactivating a location hides it from public dropdowns without deleting historical member records that reference it. Renaming a location keeps its ID, so existing member records stay valid.</p>
 
 <div class="row g-4">
   <div class="col-lg-4">
@@ -81,9 +92,11 @@ $selectedDistrict = $districtId ? Database::one("SELECT * FROM districts WHERE i
         <?= csrf_field() ?>
         <input type="hidden" name="do" value="save">
         <input type="hidden" name="level" value="state">
-        <input class="form-control form-control-sm flex-grow-1" style="min-width:9rem" name="name" placeholder="New state/UT name" required>
-        <input class="form-control form-control-sm" style="width:5rem" name="code" placeholder="Code" maxlength="10">
-        <button class="btn btn-sm btn-blue flex-shrink-0">Add</button>
+        <input type="hidden" name="id" value="<?= (int) ($editingState['id'] ?? 0) ?>">
+        <input class="form-control form-control-sm flex-grow-1" style="min-width:9rem" name="name" placeholder="New state/UT name" value="<?= e($editingState['name'] ?? '') ?>" required>
+        <input class="form-control form-control-sm" style="width:5rem" name="code" placeholder="Code" maxlength="10" value="<?= e($editingState['code'] ?? '') ?>">
+        <button class="btn btn-sm btn-blue flex-shrink-0"><?= $editingState ? 'Update' : 'Add' ?></button>
+        <?php if ($editingState): ?><a class="btn btn-sm btn-outline-secondary flex-shrink-0" href="<?= admin_url('index.php?page=locations' . $returnQs) ?>">Cancel</a><?php endif; ?>
       </form>
       <div class="table-responsive" style="max-height:520px;overflow-y:auto;">
         <table class="table table-admin align-middle table-sm">
@@ -98,6 +111,7 @@ $selectedDistrict = $districtId ? Database::one("SELECT * FROM districts WHERE i
               </td>
               <td class="text-end text-nowrap">
                 <span class="badge-type <?= $s['status'] === 'active' ? 'badge-green' : 'bg-danger-subtle text-danger' ?>"><?= e(ucfirst($s['status'])) ?></span>
+                <a class="btn btn-sm btn-outline-nav" title="Edit name" href="<?= admin_url('index.php?page=locations&edit_level=state&edit_id=' . $s['id'] . $returnQs) ?>"><i class="fa-solid fa-pen"></i></a>
                 <form method="post" action="<?= admin_url('index.php?page=locations&action=toggle&level=state&id=' . $s['id']) ?>" class="d-inline">
                   <?= csrf_field() ?>
                   <button class="btn btn-sm btn-outline-secondary" title="Toggle status"><i class="fa-solid fa-toggle-on"></i></button>
@@ -124,11 +138,13 @@ $selectedDistrict = $districtId ? Database::one("SELECT * FROM districts WHERE i
           <?= csrf_field() ?>
           <input type="hidden" name="do" value="save">
           <input type="hidden" name="level" value="district">
+          <input type="hidden" name="id" value="<?= (int) ($editingDistrict['id'] ?? 0) ?>">
           <input type="hidden" name="state_id" value="<?= (int) $stateId ?>">
           <input type="hidden" name="redirect_state" value="<?= (int) $stateId ?>">
-          <input class="form-control form-control-sm flex-grow-1" style="min-width:9rem" name="name" placeholder="New district name" required>
-          <input class="form-control form-control-sm" style="width:5rem" name="code" placeholder="Code" maxlength="10">
-          <button class="btn btn-sm btn-blue flex-shrink-0">Add</button>
+          <input class="form-control form-control-sm flex-grow-1" style="min-width:9rem" name="name" placeholder="New district name" value="<?= e($editingDistrict['name'] ?? '') ?>" required>
+          <input class="form-control form-control-sm" style="width:5rem" name="code" placeholder="Code" maxlength="10" value="<?= e($editingDistrict['code'] ?? '') ?>">
+          <button class="btn btn-sm btn-blue flex-shrink-0"><?= $editingDistrict ? 'Update' : 'Add' ?></button>
+          <?php if ($editingDistrict): ?><a class="btn btn-sm btn-outline-secondary flex-shrink-0" href="<?= admin_url('index.php?page=locations' . $returnQs) ?>">Cancel</a><?php endif; ?>
         </form>
         <div class="table-responsive" style="max-height:480px;overflow-y:auto;">
           <table class="table table-admin align-middle table-sm">
@@ -143,6 +159,7 @@ $selectedDistrict = $districtId ? Database::one("SELECT * FROM districts WHERE i
                 </td>
                 <td class="text-end text-nowrap">
                   <span class="badge-type <?= $d['status'] === 'active' ? 'badge-green' : 'bg-danger-subtle text-danger' ?>"><?= e(ucfirst($d['status'])) ?></span>
+                  <a class="btn btn-sm btn-outline-nav" title="Edit name" href="<?= admin_url('index.php?page=locations&edit_level=district&edit_id=' . $d['id'] . $returnQs) ?>"><i class="fa-solid fa-pen"></i></a>
                   <form method="post" action="<?= admin_url('index.php?page=locations&action=toggle&level=district&id=' . $d['id'] . '&state_id=' . $stateId) ?>" class="d-inline">
                     <?= csrf_field() ?>
                     <button class="btn btn-sm btn-outline-secondary" title="Toggle status"><i class="fa-solid fa-toggle-on"></i></button>
@@ -171,12 +188,14 @@ $selectedDistrict = $districtId ? Database::one("SELECT * FROM districts WHERE i
           <?= csrf_field() ?>
           <input type="hidden" name="do" value="save">
           <input type="hidden" name="level" value="taluka">
+          <input type="hidden" name="id" value="<?= (int) ($editingTaluka['id'] ?? 0) ?>">
           <input type="hidden" name="district_id" value="<?= (int) $districtId ?>">
           <input type="hidden" name="redirect_state" value="<?= (int) $stateId ?>">
           <input type="hidden" name="redirect_district" value="<?= (int) $districtId ?>">
-          <input class="form-control form-control-sm flex-grow-1" style="min-width:9rem" name="name" placeholder="New taluka name" required>
-          <input class="form-control form-control-sm" style="width:5rem" name="code" placeholder="Code" maxlength="10">
-          <button class="btn btn-sm btn-blue flex-shrink-0">Add</button>
+          <input class="form-control form-control-sm flex-grow-1" style="min-width:9rem" name="name" placeholder="New taluka name" value="<?= e($editingTaluka['name'] ?? '') ?>" required>
+          <input class="form-control form-control-sm" style="width:5rem" name="code" placeholder="Code" maxlength="10" value="<?= e($editingTaluka['code'] ?? '') ?>">
+          <button class="btn btn-sm btn-blue flex-shrink-0"><?= $editingTaluka ? 'Update' : 'Add' ?></button>
+          <?php if ($editingTaluka): ?><a class="btn btn-sm btn-outline-secondary flex-shrink-0" href="<?= admin_url('index.php?page=locations' . $returnQs) ?>">Cancel</a><?php endif; ?>
         </form>
         <div class="table-responsive" style="max-height:480px;overflow-y:auto;">
           <table class="table table-admin align-middle table-sm">
@@ -186,6 +205,7 @@ $selectedDistrict = $districtId ? Database::one("SELECT * FROM districts WHERE i
                 <td><?= e($t['name']) ?></td>
                 <td class="text-end text-nowrap">
                   <span class="badge-type <?= $t['status'] === 'active' ? 'badge-green' : 'bg-danger-subtle text-danger' ?>"><?= e(ucfirst($t['status'])) ?></span>
+                  <a class="btn btn-sm btn-outline-nav" title="Edit name" href="<?= admin_url('index.php?page=locations&edit_level=taluka&edit_id=' . $t['id'] . $returnQs) ?>"><i class="fa-solid fa-pen"></i></a>
                   <form method="post" action="<?= admin_url('index.php?page=locations&action=toggle&level=taluka&id=' . $t['id'] . '&state_id=' . $stateId . '&district_id=' . $districtId) ?>" class="d-inline">
                     <?= csrf_field() ?>
                     <button class="btn btn-sm btn-outline-secondary" title="Toggle status"><i class="fa-solid fa-toggle-on"></i></button>

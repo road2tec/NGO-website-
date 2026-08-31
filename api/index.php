@@ -31,6 +31,16 @@ try {
             echo json_encode(['talukas' => location_talukas($districtId)]);
             break;
 
+        case 'job_subcategories':
+            $categoryId = (int) get_param('category_id');
+            if ($categoryId <= 0) {
+                http_response_code(400);
+                echo json_encode(['error' => 'category_id is required.']);
+                break;
+            }
+            echo json_encode(['subcategories' => job_subcategories($categoryId)]);
+            break;
+
         default:
             http_response_code(404);
             echo json_encode(['error' => 'Unknown resource.']);

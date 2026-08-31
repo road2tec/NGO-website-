@@ -38,6 +38,7 @@
         <ul class="footer-links">
           <li><a href="<?= url('membership/apply') ?>">Become a member</a></li>
           <li><a href="<?= url('volunteer') ?>">Volunteer</a></li>
+          <li><a href="<?= url('careers') ?>">Careers</a></li>
           <li><a href="<?= url('donate') ?>">Donate</a></li>
           <li><a href="<?= url('donate/campaigns') ?>">Crowdfunding</a></li>
           <li><a href="<?= url('certificate') ?>">Event certificate</a></li>
@@ -81,6 +82,7 @@
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script src="<?= asset('js/main.js') ?>" defer></script>
 <script src="<?= asset('js/location-dropdowns.js') ?>" defer></script>
+<script src="<?= asset('js/job-category-dropdown.js') ?>" defer></script>
 <!-- Google Translate (English / Hindi / Marathi + more) -->
 <script>
 function googleTranslateElementInit() {

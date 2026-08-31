@@ -5,14 +5,15 @@ $admin = require_admin();
 
 $page = get_param('page', 'dashboard');
 $allowed = [
-    'dashboard','banners','about','people','achievements','certificates','testimonials','news','sponsors',
+    'dashboard','banners','homepage_buttons','about','people','achievements','certificates','testimonials','news','sponsors',
     'members','membership_categories','locations','projects','events','gallery','campaigns','donations',
     'donation_amounts','documents','volunteers','contacts','newsletter','settings','password',
+    'jobs','job_categories','job_subcategories','job_applications',
 ];
 if (!in_array($page, $allowed, true)) $page = 'dashboard';
 
 $titles = [
-    'dashboard' => 'Dashboard', 'banners' => 'Homepage Banners', 'about' => 'About Sections',
+    'dashboard' => 'Dashboard', 'banners' => 'Homepage Banners', 'homepage_buttons' => 'Homepage Buttons', 'about' => 'About Sections',
     'people' => 'Board & Team', 'achievements' => 'Achievements', 'certificates' => 'Organisation Certificates',
     'testimonials' => 'Testimonials', 'news' => 'News', 'sponsors' => 'Sponsors / CSR Partners',
     'members' => 'Members', 'membership_categories' => 'Membership Categories', 'locations' => 'Location Master Data',
@@ -20,6 +21,7 @@ $titles = [
     'campaigns' => 'Crowdfunding Campaigns', 'donations' => 'Donations', 'donation_amounts' => 'Donation Amount Cards',
     'documents' => 'Documents', 'volunteers' => 'Volunteer Applications', 'contacts' => 'Contact Messages',
     'newsletter' => 'Newsletter Subscribers', 'settings' => 'Website Settings', 'password' => 'Change Password',
+    'jobs' => 'Jobs', 'job_categories' => 'Job Categories', 'job_subcategories' => 'Job Subcategories', 'job_applications' => 'Job Applications',
 ];
 $pageTitle = $titles[$page];
 

@@ -40,7 +40,6 @@ class VolunteerController extends Controller
 
         $this->render('volunteer/index', [
             'pageTitle' => 'Volunteer With Us',
-            'captcha'   => captcha_question(),
         ]);
     }
 }

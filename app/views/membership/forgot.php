@@ -19,8 +19,7 @@
               <input type="email" class="form-control" id="fp-email" name="email" required autofocus>
             </div>
             <div class="mb-3">
-              <label class="form-label" for="fp-cap"><?= e($captcha) ?></label>
-              <input class="form-control" id="fp-cap" name="captcha" required>
+              <?php $captchaFieldId = 'fp-cap'; require __DIR__ . '/../layouts/captcha_field.php'; ?>
             </div>
             <button class="btn btn-blue w-100" type="submit">Send reset link</button>
           </form>

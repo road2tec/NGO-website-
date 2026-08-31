@@ -1,5 +1,5 @@
 <?php
-/** Static legal pages: privacy, terms, refund, disclaimer */
+/** Legal pages: privacy, terms, refund, disclaimer. Content lives in about_sections (Admin -> About Sections), same table the About Us page already uses. */
 class PageController extends Controller
 {
     public function index(?string $slug = null): void
@@ -10,6 +10,9 @@ class PageController extends Controller
             'privacy' => 'Privacy Policy', 'terms' => 'Terms & Conditions',
             'refund' => 'Refund Policy', 'disclaimer' => 'Disclaimer',
         ];
-        $this->render('pages/' . $slug, ['pageTitle' => $titles[$slug]]);
+        $this->render('pages/legal', [
+            'pageTitle' => $titles[$slug],
+            'section'   => Database::one("SELECT * FROM about_sections WHERE slug=?", [$slug]),
+        ]);
     }
 }

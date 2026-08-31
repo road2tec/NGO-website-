@@ -116,6 +116,31 @@
     });
   });
 
+  /* Payment method select -> reveal Cheque No. / Bank Name fields only for "Cheque" */
+  document.querySelectorAll('[data-toggle-cheque-fields]').forEach(function (select) {
+    var form = select.closest('form');
+    if (!form) return;
+    var fields = form.querySelectorAll('.cheque-fields');
+    function sync() {
+      var isCheque = select.value === 'cheque';
+      fields.forEach(function (f) { f.classList.toggle('d-none', !isCheque); });
+    }
+    select.addEventListener('change', sync);
+    sync();
+  });
+
+  /* CAPTCHA image refresh - swaps the <img> src, no full page reload */
+  document.querySelectorAll('.captcha-refresh-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var wrap = btn.closest('.captcha-image-wrap');
+      var img = wrap && wrap.querySelector('.captcha-img');
+      if (!img) return;
+      img.src = img.src.split('?')[0] + '?t=' + Date.now();
+      var input = btn.closest('.captcha-widget').querySelector('.captcha-input');
+      if (input) { input.value = ''; input.focus(); }
+    });
+  });
+
   /* One-click copy (bank account number, IFSC, UPI ID, ...) */
   document.querySelectorAll('.copy-btn').forEach(function (btn) {
     btn.addEventListener('click', function () {

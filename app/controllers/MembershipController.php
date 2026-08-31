@@ -128,7 +128,6 @@ class MembershipController extends Controller
             'categories'  => $categories,
             'states'      => location_states(),
             'idProofTypes' => id_proof_types(),
-            'captcha'     => captcha_question(),
         ]);
     }
 
@@ -213,7 +212,7 @@ class MembershipController extends Controller
                         'expires_at' => date('Y-m-d H:i:s', time() + 3600),
                     ]);
                     $resetLink = url('membership/reset/' . $rawToken);
-                    @mail($email, 'Reset your password - ' . setting('site_name'),
+                    send_mail($email, 'Reset your password - ' . setting('site_name'),
                         "Hello,\n\nWe received a request to reset your membership account password.\n\n"
                         . "Click the link below to set a new password. This link is valid for 1 hour and can only be used once.\n\n"
                         . "$resetLink\n\nIf you did not request this, you can safely ignore this email.\n\n"
@@ -225,7 +224,6 @@ class MembershipController extends Controller
         }
         $this->render('membership/forgot', [
             'pageTitle' => 'Forgot Password',
-            'captcha'   => captcha_question(),
         ]);
     }
 
@@ -303,7 +301,8 @@ class MembershipController extends Controller
         $category = $member['category_id']
             ? Database::one("SELECT name FROM membership_categories WHERE id=?", [$member['category_id']])
             : null;
-        $this->renderBare('membership/idcard', ['member' => $member, 'category' => $category]);
+        $mission = Database::one("SELECT content FROM about_sections WHERE slug='mission'");
+        $this->renderBare('membership/idcard', ['member' => $member, 'category' => $category, 'mission' => $mission]);
     }
 
     private function requireMember(): array

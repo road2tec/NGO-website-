@@ -39,7 +39,7 @@
               </div>
               <div class="col-md-6"><label class="form-label" for="v-resume">Resume (optional)</label><input type="file" class="form-control" id="v-resume" name="resume" accept=".pdf,.doc,.docx"></div>
               <div class="col-12"><label class="form-label" for="v-exp">Relevant experience</label><textarea class="form-control" id="v-exp" name="experience" rows="4"></textarea></div>
-              <div class="col-md-6"><label class="form-label" for="v-cap"><?= e($captcha) ?></label><input class="form-control" id="v-cap" name="captcha" required></div>
+              <div class="col-md-6"><?php $captchaFieldId = 'v-cap'; require __DIR__ . '/../layouts/captcha_field.php'; ?></div>
               <div class="col-12">
                 <div class="form-check">
                   <input class="form-check-input" type="checkbox" id="v-consent" name="consent" value="1" required>

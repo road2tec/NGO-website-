@@ -14,7 +14,6 @@ class DonateController extends Controller
             'pageTitle'     => 'Donate Now',
             'campaigns'     => Database::all("SELECT * FROM campaigns WHERE is_active=1 ORDER BY id DESC"),
             'amountOptions' => Database::all("SELECT * FROM donation_amount_options WHERE is_active=1 ORDER BY sort_order"),
-            'captcha'       => captcha_question(),
         ]);
     }
 
@@ -43,7 +42,6 @@ class DonateController extends Controller
             'donors'        => Database::all("SELECT donor_name, amount, created_at FROM donations
                                           WHERE campaign_id=? AND status='received' ORDER BY id DESC LIMIT 10", [$campaign['id']]),
             'amountOptions' => Database::all("SELECT * FROM donation_amount_options WHERE is_active=1 ORDER BY sort_order"),
-            'captcha'       => captcha_question(),
         ]);
     }
 
@@ -52,6 +50,20 @@ class DonateController extends Controller
         $this->render('donate/sponsor', [
             'pageTitle' => 'Sponsorship Programs',
             'sponsors'  => Database::all("SELECT * FROM sponsors ORDER BY sort_order"),
+        ]);
+    }
+
+    /** Public QR verification endpoint for donation certificates. */
+    public function certificate(?string $code = null): void
+    {
+        $donation = $code ? Database::one(
+            "SELECT d.*, c.title AS campaign_title FROM donations d
+             LEFT JOIN campaigns c ON c.id = d.campaign_id WHERE d.cert_code = ?", [$code]
+        ) : null;
+        $this->render('donate/certificate_verify', [
+            'pageTitle' => 'Verify Donation Certificate',
+            'donation'  => $donation,
+            'code'      => $code,
         ]);
     }
 
@@ -102,12 +114,26 @@ class DonateController extends Controller
                 'surname'     => $surname,
                 'email'       => post('email'),
                 'phone'       => post('phone'),
+                'address'     => post('address'),
                 'amount'      => $amount,
-                'method'      => in_array(post('method'), ['upi','bank','cash','online'], true) ? post('method') : 'upi',
+                'method'      => in_array(post('method'), ['upi','bank','cash','online','cheque'], true) ? post('method') : 'upi',
                 'txn_ref'     => post('txn_ref'),
+                'cheque_no'       => post('cheque_no') ?: null,
+                'donor_bank_name' => post('donor_bank_name') ?: null,
                 'pan'         => post('pan'),
                 'message'     => post('message'),
             ]);
+            send_mail(
+                post('email'),
+                'Thank you for your pledge - ' . setting('site_name'),
+                "Dear $fullName,\n\n"
+                . "Thank you for pledging " . format_inr($amount) . " to " . setting('site_name') . ".\n\n"
+                . "Reference: $receipt\n\n"
+                . "Please complete the transfer using the UPI/bank details shown on the donate page if you haven't already. "
+                . "Our team will verify the payment and email your 80G donation receipt once confirmed.\n\n"
+                . "With gratitude,\n" . setting('site_name'),
+                $fullName
+            );
             flash_set('success', "Thank you! Your donation pledge is recorded (Ref: $receipt). Please complete the transfer using the UPI/bank details shown. Our team will verify it and email your 80G receipt.");
         }
         redirect($redirectTo);

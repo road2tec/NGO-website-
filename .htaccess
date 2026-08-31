@@ -25,6 +25,21 @@ Options -Indexes
     ExpiresByType application/javascript "access plus 7 days"
 </IfModule>
 
+# The CAPTCHA image is generated fresh on every request (Content-Type: image/png),
+# so it must never be cached - ExpiresByType above matches by Content-Type, not
+# file extension, and would otherwise tell browsers/proxies to reuse the same
+# challenge image for up to 30 days.
+<Files "captcha-image.php">
+    <IfModule mod_expires.c>
+        ExpiresActive Off
+    </IfModule>
+    <IfModule mod_headers.c>
+        Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+        Header set Pragma "no-cache"
+        Header unset Expires
+    </IfModule>
+</Files>
+
 <IfModule mod_deflate.c>
     AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json image/svg+xml
 </IfModule>

@@ -7,7 +7,7 @@
 
 <section class="section">
   <div class="container">
-    <div class="row g-5">
+    <div class="row g-5 align-items-start">
       <div class="col-lg-7">
         <?php if (!empty($campaign['image'])): ?>
           <img src="<?= e(upload_url($campaign['image'])) ?>" class="w-100 rounded-ngo mb-4" alt="<?= e($campaign['title']) ?>">
@@ -37,7 +37,7 @@
         <?php endif; ?>
       </div>
       <div class="col-lg-5">
-        <div class="form-card" data-aos="fade-up">
+        <div class="form-card">
           <h5 class="fw-bold mb-3">Support this campaign</h5>
           <form method="post" action="<?= url('donate/campaign/' . $campaign['slug']) ?>">
             <?= csrf_field() ?>
@@ -57,13 +57,16 @@
               <div class="col-6"><label class="form-label" for="c-sname">Surname</label><input class="form-control" id="c-sname" name="surname" required></div>
               <div class="col-12"><label class="form-label" for="c-email">Email</label><input type="email" class="form-control" id="c-email" name="email" required></div>
               <div class="col-12"><label class="form-label" for="c-phone">Phone</label><input class="form-control" id="c-phone" name="phone" required></div>
+              <div class="col-12"><label class="form-label" for="c-address">Address (for your donation receipt)</label><input class="form-control" id="c-address" name="address"></div>
               <div class="col-12">
                 <label class="form-label" for="c-method">Payment method</label>
-                <select class="form-select" id="c-method" name="method">
-                  <option value="upi">UPI</option><option value="bank">Bank transfer</option><option value="online">Online</option>
+                <select class="form-select" id="c-method" name="method" data-toggle-cheque-fields>
+                  <option value="upi">UPI</option><option value="bank">Bank transfer</option><option value="cheque">Cheque</option><option value="online">Online</option>
                 </select>
               </div>
-              <div class="col-12"><label class="form-label" for="c-cap"><?= e($captcha) ?></label><input class="form-control" id="c-cap" name="captcha" required></div>
+              <div class="col-6 d-none cheque-fields"><label class="form-label" for="c-cheque-no">Cheque No.</label><input class="form-control" id="c-cheque-no" name="cheque_no"></div>
+              <div class="col-6 d-none cheque-fields"><label class="form-label" for="c-cheque-bank">Bank Name</label><input class="form-control" id="c-cheque-bank" name="donor_bank_name"></div>
+              <div class="col-12"><?php $captchaFieldId = 'c-cap'; require __DIR__ . '/../layouts/captcha_field.php'; ?></div>
               <div class="col-12"><button class="btn btn-donate btn-lg w-100" type="submit">Contribute</button></div>
             </div>
           </form>

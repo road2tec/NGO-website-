@@ -8,7 +8,7 @@
 
 <section class="section">
   <div class="container">
-    <div class="row g-5">
+    <div class="row g-5 align-items-start">
       <div class="col-lg-6">
         <h4 class="fw-bold mb-3">Pay directly</h4>
         <div class="card-ngo p-4 mb-4">
@@ -63,7 +63,7 @@
       </div>
 
       <div class="col-lg-6">
-        <div class="form-card" data-aos="fade-up">
+        <div class="form-card">
           <h4 class="fw-bold mb-3">Record your donation pledge</h4>
           <p class="small text-muted">After transferring, fill this so we can match your payment and email your 80G receipt.</p>
           <form method="post" action="<?= url('donate') ?>">
@@ -104,15 +104,18 @@
               </div>
               <div class="col-md-6"><label class="form-label" for="d-email">Email</label><input type="email" class="form-control" id="d-email" name="email" required></div>
               <div class="col-md-6"><label class="form-label" for="d-phone">Phone</label><input class="form-control" id="d-phone" name="phone" required></div>
+              <div class="col-12"><label class="form-label" for="d-address">Address (for your donation receipt)</label><input class="form-control" id="d-address" name="address"></div>
               <div class="col-md-6">
                 <label class="form-label" for="d-method">Payment method</label>
-                <select class="form-select" id="d-method" name="method">
-                  <option value="upi">UPI</option><option value="bank">Bank transfer</option><option value="cash">Cash</option><option value="online">Online (card/wallet)</option>
+                <select class="form-select" id="d-method" name="method" data-toggle-cheque-fields>
+                  <option value="upi">UPI</option><option value="bank">Bank transfer</option><option value="cash">Cash</option><option value="cheque">Cheque</option><option value="online">Online (card/wallet)</option>
                 </select>
               </div>
               <div class="col-md-6"><label class="form-label" for="d-txn">Transaction ref. (if available)</label><input class="form-control" id="d-txn" name="txn_ref"></div>
+              <div class="col-md-6 d-none cheque-fields"><label class="form-label" for="d-cheque-no">Cheque No.</label><input class="form-control" id="d-cheque-no" name="cheque_no"></div>
+              <div class="col-md-6 d-none cheque-fields"><label class="form-label" for="d-cheque-bank">Bank Name (on cheque)</label><input class="form-control" id="d-cheque-bank" name="donor_bank_name"></div>
               <div class="col-md-6"><label class="form-label" for="d-pan">PAN (for 80G receipt)</label><input class="form-control" id="d-pan" name="pan"></div>
-              <div class="col-md-6"><label class="form-label" for="d-cap"><?= e($captcha) ?></label><input class="form-control" id="d-cap" name="captcha" required></div>
+              <div class="col-md-6"><?php $captchaFieldId = 'd-cap'; require __DIR__ . '/../layouts/captcha_field.php'; ?></div>
               <div class="col-12"><label class="form-label" for="d-msg">Message (optional)</label><textarea class="form-control" id="d-msg" name="message" rows="2"></textarea></div>
               <div class="col-12"><button class="btn btn-donate btn-lg w-100" type="submit">Submit pledge</button></div>
             </div>
@@ -130,7 +133,7 @@
           $raised   = (float) $c['raised_amount'];
           $progress = min(100, round($raised / $goal * 100));
         ?>
-        <div class="col-md-4" data-aos="fade-up">
+        <div class="col-md-4">
           <div class="card-ngo p-4 h-100">
             <h6 class="fw-bold"><?= e($c['title']) ?></h6>
             <p class="small text-muted"><?= e(excerpt($c['summary'] ?? '', 90)) ?></p>

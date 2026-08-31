@@ -23,6 +23,7 @@ $routeMap = [
     'contact'     => ['ContactController', 'index'],
     'news'        => ['NewsController', 'index'],
     'volunteer'   => ['VolunteerController', 'index'],
+    'careers'     => ['CareersController', 'index'],
     'page'        => ['PageController', 'index'],
     'newsletter'  => ['HomeController', 'newsletter'],
 ];

@@ -35,6 +35,7 @@ class HomeController extends Controller
             'news'         => Database::all("SELECT * FROM news WHERE is_published=1 ORDER BY published_at DESC LIMIT 3"),
             'campaign'     => $this->crowdfundingBannerCampaign(),
             'sponsors'     => Database::all("SELECT * FROM sponsors ORDER BY sort_order"),
+            'homeButtons'  => Database::all("SELECT * FROM homepage_buttons WHERE is_active=1 ORDER BY sort_order, id"),
         ]);
     }
 

@@ -34,7 +34,7 @@
               <div class="mb-3"><label class="form-label" for="ev-name">Name</label><input class="form-control" id="ev-name" name="name" required></div>
               <div class="mb-3"><label class="form-label" for="ev-email">Email</label><input type="email" class="form-control" id="ev-email" name="email" required></div>
               <div class="mb-3"><label class="form-label" for="ev-phone">Phone</label><input class="form-control" id="ev-phone" name="phone" required></div>
-              <div class="mb-3"><label class="form-label" for="ev-cap"><?= e(captcha_question()) ?></label><input class="form-control" id="ev-cap" name="captcha" required></div>
+              <div class="mb-3"><?php $captchaFieldId = 'ev-cap'; require __DIR__ . '/../layouts/captcha_field.php'; ?></div>
               <button class="btn btn-donate w-100" type="submit">Register</button>
               <p class="small text-muted mt-2 mb-0">Save the Event ID above - you'll need it to download your certificate afterwards.</p>
             </form>

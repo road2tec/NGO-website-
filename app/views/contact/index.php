@@ -33,7 +33,7 @@
               <div class="col-md-6"><label class="form-label" for="c-phone">Phone</label><input class="form-control" id="c-phone" name="phone"></div>
               <div class="col-md-6"><label class="form-label" for="c-subject">Subject</label><input class="form-control" id="c-subject" name="subject"></div>
               <div class="col-12"><label class="form-label" for="c-msg">Message</label><textarea class="form-control" id="c-msg" name="message" rows="5" required></textarea></div>
-              <div class="col-md-6"><label class="form-label" for="c-cap"><?= e($captcha) ?></label><input class="form-control" id="c-cap" name="captcha" required></div>
+              <div class="col-md-6"><?php $captchaFieldId = 'c-cap'; require __DIR__ . '/../layouts/captcha_field.php'; ?></div>
               <div class="col-12"><button class="btn btn-donate btn-lg" type="submit">Send message</button></div>
             </div>
           </form>

@@ -14,10 +14,9 @@ class ContactController extends Controller
                     'name' => post('name'), 'email' => post('email'), 'phone' => post('phone'),
                     'subject' => post('subject'), 'message' => post('message'), 'source' => 'contact',
                 ]);
-                // Optional: also email the admin (works on most shared hosting)
-                @mail(setting('site_email'), 'Website contact: ' . post('subject'),
-                      post('message') . "\n\nFrom: " . post('name') . ' <' . post('email') . '> ' . post('phone'),
-                      'From: no-reply@' . ($_SERVER['HTTP_HOST'] ?? 'localhost'));
+                // The message is already saved above regardless of whether this notification email goes through.
+                send_mail(setting('site_email'), 'Website contact: ' . post('subject'),
+                      post('message') . "\n\nFrom: " . post('name') . ' <' . post('email') . '> ' . post('phone'));
                 flash_set('success', 'Message sent! We usually reply within 2 working days.');
             }
             redirect('contact');
@@ -25,7 +24,6 @@ class ContactController extends Controller
 
         $this->render('contact/index', [
             'pageTitle' => 'Contact Us',
-            'captcha'   => captcha_question(),
         ]);
     }
 }
