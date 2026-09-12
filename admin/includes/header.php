@@ -63,6 +63,7 @@ $currentPage = get_param('page', 'dashboard');
       <div class="nav-group-title">System</div>
       <a href="<?= admin_url('index.php?page=settings') ?>" class="<?= $currentPage==='settings'?'active':'' ?>"><i class="fa-solid fa-gears"></i>Website Settings</a>
       <a href="<?= admin_url('index.php?page=password') ?>" class="<?= $currentPage==='password'?'active':'' ?>"><i class="fa-solid fa-key"></i>Change Password</a>
+      <a href="<?= admin_url('system-check.php') ?>"><i class="fa-solid fa-stethoscope"></i>System Check</a>
       <a href="<?= admin_url('logout.php') ?>"><i class="fa-solid fa-right-from-bracket"></i>Logout</a>
     </nav>
   </aside>
