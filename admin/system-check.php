@@ -17,7 +17,25 @@ function check_file(string $path, ?int $expectMinBytes = null): array
     if ($expectMinBytes !== null && $size < $expectMinBytes) {
         return ['ok' => false, 'detail' => "TRUNCATED - only $size bytes (expected at least $expectMinBytes) - re-upload this file"];
     }
-    return ['ok' => true, 'detail' => number_format($size) . ' bytes'];
+    return ['ok' => true, 'detail' => number_format($size) . ' bytes, modified ' . date('d M Y H:i', filemtime($full))];
+}
+
+/**
+ * A file can exist with the right size yet still be an OLD VERSION if a
+ * previous upload only replaced some files - this happened for real: the
+ * vendored libraries and functions.php were current, but admin/modules/
+ * settings.php was still an older copy. Checking for a string that only
+ * exists in the current source is the only way to catch that.
+ */
+function check_contains(string $path, string $needle, string $reason): array
+{
+    $full = dirname(__DIR__) . '/' . ltrim($path, '/');
+    if (!file_exists($full)) return ['ok' => false, 'detail' => 'MISSING - file does not exist on this server'];
+    $contents = file_get_contents($full);
+    if (!str_contains($contents, $needle)) {
+        return ['ok' => false, 'detail' => "OLD VERSION - missing \"$reason\", modified " . date('d M Y H:i', filemtime($full)) . ' - re-upload this specific file'];
+    }
+    return ['ok' => true, 'detail' => 'current version, modified ' . date('d M Y H:i', filemtime($full))];
 }
 
 $checks = [
@@ -38,6 +56,14 @@ $expectedFunctions = ['send_mail', 'generate_donation_certificate_pdf', 'generat
 foreach ($expectedFunctions as $fn) {
     $checks["functions.php has $fn()"] = ['ok' => function_exists($fn), 'detail' => function_exists($fn) ? 'present' : 'MISSING - functions.php on this server is an OLDER version, re-upload it'];
 }
+
+// Content-marker checks: catches a file that exists with a plausible size
+// but is still an OLDER VERSION because only some files got re-uploaded.
+$checks['admin/modules/settings.php is current'] = check_contains('admin/modules/settings.php', 'include_certificate', 'sample-certificate test email checkbox');
+$checks['admin/modules/donations.php is current'] = check_contains('admin/modules/donations.php', 'compose_certificate', 'certificate compose/preview flow');
+$checks['admin/download.php is current'] = check_contains('admin/download.php', 'RuntimeException', 'clean error handling for missing fonts');
+$checks['admin/modules/members.php is current'] = check_contains('admin/modules/members.php', 'export.php?type=members', 'Download Member List button');
+$checks['app/helpers/functions.php certificate format is current'] = check_contains('app/helpers/functions.php', 'number_to_words_indian', 'exact-format receipt (amount in words)');
 
 $checks['SMTP host configured'] = ['ok' => (bool) setting('smtp_host'), 'detail' => setting('smtp_host') ?: 'not set - Admin > Settings > Email'];
 
