@@ -181,6 +181,10 @@ $allCampaigns = Database::all("SELECT id, title FROM campaigns ORDER BY title");
         <li class="nav-item"><a class="nav-link <?= $statusFilter===$k?'active':'' ?>" href="<?= admin_url('index.php?page=donations&status=' . $k) ?>"><?= $label ?></a></li>
       <?php endforeach; ?>
     </ul>
+    <div class="d-flex flex-wrap gap-2">
+      <a class="btn btn-sm btn-outline-nav" href="<?= admin_url('export.php?type=donors&format=csv') ?>"><i class="fa-solid fa-file-csv me-1"></i>Download Donor List (CSV)</a>
+      <a class="btn btn-sm btn-outline-nav" href="<?= admin_url('export.php?type=donors&format=xlsx') ?>"><i class="fa-solid fa-file-excel me-1"></i>Excel</a>
+    </div>
   </div>
   <?php if ($statusFilter === 'crowdfunding'): ?>
   <form method="get" class="mt-3 d-flex align-items-center gap-2">

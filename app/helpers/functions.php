@@ -495,7 +495,32 @@ function generate_donation_receipt_pdf(array $donation): string
     return $pdf->Output('S');
 }
 
-/* ---------------- CSRF protection ---------------- */
+/* ---------------- CSV / Excel export ---------------- */
+/** Streams $rows (array of associative arrays) as a UTF-8 CSV download and exits. Excel opens UTF-8 CSVs correctly only with a BOM prefix - without it, non-ASCII text (e.g. Marathi names) shows as mojibake. */
+function export_csv(string $filename, array $headers, array $rows): void
+{
+    header('Content-Type: text/csv; charset=UTF-8');
+    header('Content-Disposition: attachment; filename="' . $filename . '.csv"');
+    header('X-Content-Type-Options: nosniff');
+    echo "\xEF\xBB\xBF"; // UTF-8 BOM
+    $out = fopen('php://output', 'w');
+    fputcsv($out, $headers);
+    foreach ($rows as $row) {
+        fputcsv($out, $row);
+    }
+    fclose($out);
+}
+
+/** Streams $rows as a genuine .xlsx download and exits, using the vendored SimpleXLSXGen (MIT, no Composer). */
+function export_xlsx(string $filename, array $headers, array $rows): void
+{
+    require_once dirname(__DIR__) . '/lib/SimpleXLSXGen/SimpleXLSXGen.php';
+    $sheet = [$headers];
+    foreach ($rows as $row) {
+        $sheet[] = $row;
+    }
+    \Shuchkin\SimpleXLSXGen::fromArray($sheet)->downloadAs($filename . '.xlsx');
+}
 function csrf_token(): string
 {
     if (empty($_SESSION[CSRF_TOKEN_NAME])) {

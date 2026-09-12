@@ -54,11 +54,17 @@ $members = Database::all("SELECT m.*, c.name AS category_name,
                            WHERE $where ORDER BY m.created_at DESC", $params);
 $idProofLabels = id_proof_types();
 ?>
-<ul class="nav nav-pills mb-4">
-  <?php foreach (['pending' => 'Pending', 'approved' => 'Approved', 'rejected' => 'Rejected', 'all' => 'All'] as $k => $label): ?>
-    <li class="nav-item"><a class="nav-link <?= $statusFilter===$k?'active':'' ?>" href="<?= admin_url('index.php?page=members&status=' . $k) ?>"><?= $label ?></a></li>
-  <?php endforeach; ?>
-</ul>
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+  <ul class="nav nav-pills mb-0">
+    <?php foreach (['pending' => 'Pending', 'approved' => 'Approved', 'rejected' => 'Rejected', 'all' => 'All'] as $k => $label): ?>
+      <li class="nav-item"><a class="nav-link <?= $statusFilter===$k?'active':'' ?>" href="<?= admin_url('index.php?page=members&status=' . $k) ?>"><?= $label ?></a></li>
+    <?php endforeach; ?>
+  </ul>
+  <div class="d-flex flex-wrap gap-2">
+    <a class="btn btn-sm btn-outline-nav" href="<?= admin_url('export.php?type=members&format=csv') ?>"><i class="fa-solid fa-file-csv me-1"></i>Download Member List (CSV)</a>
+    <a class="btn btn-sm btn-outline-nav" href="<?= admin_url('export.php?type=members&format=xlsx') ?>"><i class="fa-solid fa-file-excel me-1"></i>Excel</a>
+  </div>
+</div>
 
 <div class="admin-card">
   <div class="table-responsive">
