@@ -156,9 +156,21 @@ $activeCampaigns = Database::all("SELECT id, title FROM campaigns WHERE is_activ
           <div class="col-md-6"><label class="form-label">Signatory name</label><input class="form-control" name="cert_signatory_name" value="<?= e($s('cert_signatory_name')) ?>"></div>
           <div class="col-md-6"><label class="form-label">Signatory designation</label><input class="form-control" name="cert_signatory_designation" value="<?= e($s('cert_signatory_designation')) ?>" placeholder="e.g. Founder & Trustee"></div>
           <div class="col-md-6"><label class="form-label">Legal status line</label><input class="form-control" name="org_legal_status" value="<?= e($s('org_legal_status') ?: 'Section 8 Company / Registered NGO') ?>"></div>
-          <div class="col-md-6"><label class="form-label">Website (shown on ID cards)</label><input class="form-control" name="org_website" value="<?= e($s('org_website')) ?>" placeholder="<?= e(BASE_URL) ?>"></div>
           <div class="col-md-6"><label class="form-label">Organisation PAN</label><input class="form-control" name="org_pan" value="<?= e($s('org_pan')) ?>"></div>
           <div class="col-md-6"><label class="form-label">80G Approval / URN</label><input class="form-control" name="org_80g_urn" value="<?= e($s('org_80g_urn')) ?>"></div>
+        </div>
+      </div>
+      <div class="admin-card mt-4">
+        <h6 class="fw-bold mb-3">Member ID Card</h6>
+        <p class="small text-muted">Everything printed on a member's ID card, editable in one place. Logo and signature come from "Certificate &amp; receipt branding" above; Email/Contact/Address come from "General" below - edit those there and they update the ID card too. Mission text on the back comes from Admin &rarr; About Sections &rarr; "Our Mission".</p>
+        <div class="mb-3">
+          <label class="form-label">Website (shown on the back of the card)</label>
+          <input class="form-control" name="org_website" value="<?= e($s('org_website')) ?>" placeholder="<?= e(BASE_URL) ?>">
+        </div>
+        <div class="mb-1">
+          <label class="form-label">Membership benefits (shown on the back of the card)</label>
+          <textarea class="form-control" name="membership_benefits" rows="4"><?= e($s('membership_benefits')) ?></textarea>
+          <div class="form-text">One benefit per line. A member can preview their own card from their dashboard's "Download ID Card" button after saving.</div>
         </div>
       </div>
     </div>
@@ -177,11 +189,6 @@ $activeCampaigns = Database::all("SELECT id, title FROM campaigns WHERE is_activ
         <div class="mb-3"><label class="form-label">80G / 12A note</label><input class="form-control" name="pan_80g" value="<?= e($s('pan_80g')) ?>"></div>
         <div class="mb-3"><label class="form-label">Membership fee note</label><input class="form-control" name="membership_fee_note" value="<?= e($s('membership_fee_note')) ?>"></div>
         <div class="mb-3"><label class="form-label">Member number prefix</label><input class="form-control" name="member_no_prefix" value="<?= e($s('member_no_prefix') ?: 'MEM') ?>" maxlength="10"><div class="form-text">Used when a member is approved, e.g. <code><?= e($s('member_no_prefix') ?: 'MEM') ?>-PUN-26-0001</code>.</div></div>
-        <div class="mb-3">
-          <label class="form-label">Membership benefits (shown on the back of the ID card)</label>
-          <textarea class="form-control" name="membership_benefits" rows="4"><?= e($s('membership_benefits')) ?></textarea>
-          <div class="form-text">One benefit per line.</div>
-        </div>
         <div class="mb-3"><label class="form-label">Homepage announcement banner</label><input class="form-control" name="announcement" value="<?= e($s('announcement')) ?>"></div>
       </div>
       <div class="admin-card mb-4">
