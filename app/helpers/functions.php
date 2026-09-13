@@ -204,46 +204,76 @@ function donation_template_vars(array $donation): array
 }
 
 /**
- * Shared letterhead font setup for both PDFs. Retries a few times on
- * failure: on some hosts, the font file can pass an is_readable() check yet
- * still transiently fail to open moments later (antivirus/backup/lock
- * contention on the server) - this self-heals from that instead of failing
- * a real send over a hiccup that would have succeeded a moment later.
+ * Mirrors only the raw .ttf files into uploads/private/font-runtime/unifont/
+ * and returns that directory for use as FPDF_FONTPATH.
+ *
+ * Root cause found (not a guess): tFPDF's AddFont() caches font metrics in a
+ * generated `dejavusans.mtx.php`, and that cache file HARDCODES the absolute
+ * path of the .ttf it was built from (`$ttffile = '...'`) so it can re-embed
+ * the actual glyph data on demand without re-parsing the whole TTF every
+ * request. The cache files that shipped in earlier versions of this repo
+ * were generated once on a development machine and committed to git, baking
+ * in that machine's own local path - so on every other server, tFPDF read
+ * the cache, found the size matched, and confidently tried to fopen() a path
+ * that only ever existed on the machine that first generated the cache. That
+ * is why the failure was 100% reproducible and unrelated to file permissions
+ * or antivirus/lock contention - it was always trying the wrong path.
+ *
+ * Deliberately mirrors ONLY the .ttf files (no cache files) so tFPDF
+ * regenerates dejavusans.mtx.php fresh here, with the correct path for
+ * wherever this code is actually running.
  */
+function _ensure_pdf_font_mirror(): string
+{
+    $mirrorDir = UPLOAD_DIR . '/private/font-runtime';
+    $unifontDir = $mirrorDir . '/unifont';
+    $sourceDir = dirname(__DIR__) . '/lib/TFPDF/font/unifont';
+
+    if (!is_dir($unifontDir)) {
+        mkdir($unifontDir, 0755, true);
+    }
+
+    foreach (['DejaVuSans.ttf', 'DejaVuSans-Bold.ttf'] as $file) {
+        $dest = $unifontDir . '/' . $file;
+        $src  = $sourceDir . '/' . $file;
+        $needsCopy = !file_exists($dest) || filesize($dest) === 0
+            || (file_exists($src) && filemtime($src) > filemtime($dest));
+        if ($needsCopy && file_exists($src)) {
+            $data = @file_get_contents($src);
+            if ($data !== false) {
+                @file_put_contents($dest, $data);
+            }
+        }
+    }
+    return $mirrorDir . '/';
+}
+
+/** Shared letterhead font setup for both PDFs. */
 function _donation_pdf_new(string $orientation): tFPDF
 {
     require_once dirname(__DIR__) . '/lib/TFPDF/tfpdf.php';
     require_once dirname(__DIR__) . '/lib/TFPDF/font/unifont/ttfonts.php';
-    $fontDir = dirname(__DIR__) . '/lib/TFPDF/font/unifont/';
 
-    $attempts = 3;
-    $lastError = null;
-    for ($i = 1; $i <= $attempts; $i++) {
-        clearstatcache(true); // don't trust a stale cached stat() from a previous attempt
-        try {
-            foreach (['DejaVuSans.ttf', 'DejaVuSans-Bold.ttf'] as $fontFile) {
-                if (!is_readable($fontDir . $fontFile)) {
-                    throw new RuntimeException(
-                        "Certificate/receipt generation is unavailable: $fontFile is missing or unreadable at "
-                        . "app/lib/TFPDF/font/unifont/ on this server. Re-upload that folder from the deployment package."
-                    );
-                }
-            }
-            $pdf = new tFPDF($orientation, 'mm', 'A4');
-            $pdf->SetAutoPageBreak(false);
-            $pdf->AddFont('DejaVu', '', 'DejaVuSans.ttf', true);
-            $pdf->AddFont('DejaVu', 'B', 'DejaVuSans-Bold.ttf', true);
-            $pdf->AddPage();
-            return $pdf;
-        } catch (RuntimeException $e) {
-            $lastError = $e;
-            if ($i < $attempts) {
-                error_log("_donation_pdf_new: attempt $i/$attempts failed (" . $e->getMessage() . "), retrying");
-                usleep(300000); // 0.3s - gives a transient lock/scan time to clear
-            }
+    if (!defined('FPDF_FONTPATH')) {
+        define('FPDF_FONTPATH', _ensure_pdf_font_mirror());
+    }
+    $fontDir = FPDF_FONTPATH . 'unifont/';
+
+    foreach (['DejaVuSans.ttf', 'DejaVuSans-Bold.ttf'] as $fontFile) {
+        if (!is_readable($fontDir . $fontFile)) {
+            throw new RuntimeException(
+                "Certificate/receipt generation is unavailable: could not mirror $fontFile to "
+                . "uploads/private/font-runtime/. Check that app/lib/TFPDF/font/unifont/$fontFile "
+                . "exists on this server and that uploads/private/ is writable."
+            );
         }
     }
-    throw $lastError;
+    $pdf = new tFPDF($orientation, 'mm', 'A4');
+    $pdf->SetAutoPageBreak(false);
+    $pdf->AddFont('DejaVu', '', 'DejaVuSans.ttf', true);
+    $pdf->AddFont('DejaVu', 'B', 'DejaVuSans-Bold.ttf', true);
+    $pdf->AddPage();
+    return $pdf;
 }
 
 /** Generates a premium landscape donation certificate as raw PDF bytes (for preview streaming or email attachment). Pass $customMessage to preview/send an edited-but-unsaved wording. */
