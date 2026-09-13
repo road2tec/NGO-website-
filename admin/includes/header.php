@@ -16,7 +16,14 @@ $currentPage = get_param('page', 'dashboard');
 <body>
 <div class="admin-wrap">
   <aside class="admin-sidebar" id="adminSidebar">
-    <div class="brand"><i class="fa-solid fa-hands-holding-child"></i><span>Admin Panel</span></div>
+    <div class="brand">
+      <?php if (setting('org_logo')): ?>
+        <img src="<?= e(upload_url(setting('org_logo'))) ?>" alt="" style="width:28px;height:28px;border-radius:50%;object-fit:cover;">
+      <?php else: ?>
+        <i class="fa-solid fa-hands-holding-child"></i>
+      <?php endif; ?>
+      <span>Admin Panel</span>
+    </div>
     <nav>
       <a href="<?= admin_url('index.php') ?>" class="<?= $currentPage==='dashboard'?'active':'' ?>"><i class="fa-solid fa-gauge"></i>Dashboard</a>
 

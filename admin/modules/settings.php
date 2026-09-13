@@ -88,6 +88,12 @@ $activeCampaigns = Database::all("SELECT id, title FROM campaigns WHERE is_activ
     <div class="col-lg-6">
       <div class="admin-card mb-4">
         <h6 class="fw-bold mb-3">General</h6>
+        <div class="mb-3">
+          <label class="form-label">Organisation logo</label>
+          <?php if ($s('org_logo')): ?><div class="small text-muted mb-1"><img src="<?= e(upload_url($s('org_logo'))) ?>" class="thumb-sm mb-1"></div><?php endif; ?>
+          <input type="file" class="form-control" name="org_logo" accept="image/*">
+          <div class="form-text">Shown in the site header, footer, admin panel and on donation certificates/receipts.</div>
+        </div>
         <div class="mb-3"><label class="form-label">Site name</label><input class="form-control" name="site_name" value="<?= e($s('site_name')) ?>"></div>
         <div class="mb-3"><label class="form-label">Tagline</label><input class="form-control" name="site_tagline" value="<?= e($s('site_tagline')) ?>"></div>
         <div class="mb-3"><label class="form-label">Email</label><input class="form-control" name="site_email" value="<?= e($s('site_email')) ?>"></div>
@@ -141,13 +147,8 @@ $activeCampaigns = Database::all("SELECT id, title FROM campaigns WHERE is_activ
       </div>
       <div class="admin-card mt-4">
         <h6 class="fw-bold mb-3">Certificate &amp; receipt branding</h6>
-        <p class="small text-muted">Logo, signature and legal details printed on every donation certificate and receipt PDF. Edit and save here once - it applies to all future certificates/receipts automatically.</p>
+        <p class="small text-muted">Signature and legal details printed on every donation certificate and receipt PDF (the logo above is used here too). Edit and save here once - it applies to all future certificates/receipts automatically.</p>
         <div class="row g-3">
-          <div class="col-md-6">
-            <label class="form-label">Organisation logo</label>
-            <?php if ($s('org_logo')): ?><div class="small text-muted mb-1"><img src="<?= e(upload_url($s('org_logo'))) ?>" class="thumb-sm mb-1"></div><?php endif; ?>
-            <input type="file" class="form-control" name="org_logo" accept="image/*">
-          </div>
           <div class="col-md-6">
             <label class="form-label">Signature image</label>
             <?php if ($s('cert_signature_image')): ?><div class="small text-muted mb-1"><img src="<?= e(upload_url($s('cert_signature_image'))) ?>" class="thumb-sm mb-1"></div><?php endif; ?>

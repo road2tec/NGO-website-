@@ -67,7 +67,13 @@ $canonical = BASE_URL . '/' . trim($_GET['url'] ?? '', '/');
 <nav class="navbar navbar-expand-lg sticky-top site-nav" aria-label="Main navigation">
   <div class="container">
     <a class="navbar-brand" href="<?= url('') ?>">
-      <span class="brand-mark" aria-hidden="true"><i class="fa-solid fa-hands-holding-child"></i></span>
+      <span class="brand-mark" aria-hidden="true">
+        <?php if (setting('org_logo')): ?>
+          <img src="<?= e(upload_url(setting('org_logo'))) ?>" alt="">
+        <?php else: ?>
+          <i class="fa-solid fa-hands-holding-child"></i>
+        <?php endif; ?>
+      </span>
       <span class="brand-text"><?= e($siteName) ?></span>
     </a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">

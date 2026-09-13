@@ -12,7 +12,13 @@
     <div class="row g-4">
       <div class="col-lg-4">
         <div class="footer-brand mb-3">
-          <span class="brand-mark" aria-hidden="true"><i class="fa-solid fa-hands-holding-child"></i></span>
+          <span class="brand-mark" aria-hidden="true">
+            <?php if (setting('org_logo')): ?>
+              <img src="<?= e(upload_url(setting('org_logo'))) ?>" alt="">
+            <?php else: ?>
+              <i class="fa-solid fa-hands-holding-child"></i>
+            <?php endif; ?>
+          </span>
           <span class="brand-text"><?= e(setting('site_name')) ?></span>
         </div>
         <p class="footer-text"><?= e(setting('site_tagline')) ?>. Registration No: <?= e(setting('registration_no')) ?>. <?= e(setting('pan_80g')) ?>.</p>
