@@ -203,28 +203,47 @@ function donation_template_vars(array $donation): array
     ];
 }
 
-/** Shared letterhead font setup for both PDFs. */
+/**
+ * Shared letterhead font setup for both PDFs. Retries a few times on
+ * failure: on some hosts, the font file can pass an is_readable() check yet
+ * still transiently fail to open moments later (antivirus/backup/lock
+ * contention on the server) - this self-heals from that instead of failing
+ * a real send over a hiccup that would have succeeded a moment later.
+ */
 function _donation_pdf_new(string $orientation): tFPDF
 {
-    $fontDir = dirname(__DIR__) . '/lib/TFPDF/font/unifont/';
-    foreach (['DejaVuSans.ttf', 'DejaVuSans-Bold.ttf'] as $fontFile) {
-        if (!is_readable($fontDir . $fontFile)) {
-            // Fails cleanly here instead of a raw die() deep inside the vendored
-            // library, which otherwise crashes with no admin-page styling at all.
-            throw new RuntimeException(
-                "Certificate/receipt generation is unavailable: $fontFile is missing or unreadable at "
-                . "app/lib/TFPDF/font/unifont/ on this server. Re-upload that folder from the deployment package."
-            );
-        }
-    }
     require_once dirname(__DIR__) . '/lib/TFPDF/tfpdf.php';
     require_once dirname(__DIR__) . '/lib/TFPDF/font/unifont/ttfonts.php';
-    $pdf = new tFPDF($orientation, 'mm', 'A4');
-    $pdf->SetAutoPageBreak(false);
-    $pdf->AddFont('DejaVu', '', 'DejaVuSans.ttf', true);
-    $pdf->AddFont('DejaVu', 'B', 'DejaVuSans-Bold.ttf', true);
-    $pdf->AddPage();
-    return $pdf;
+    $fontDir = dirname(__DIR__) . '/lib/TFPDF/font/unifont/';
+
+    $attempts = 3;
+    $lastError = null;
+    for ($i = 1; $i <= $attempts; $i++) {
+        clearstatcache(true); // don't trust a stale cached stat() from a previous attempt
+        try {
+            foreach (['DejaVuSans.ttf', 'DejaVuSans-Bold.ttf'] as $fontFile) {
+                if (!is_readable($fontDir . $fontFile)) {
+                    throw new RuntimeException(
+                        "Certificate/receipt generation is unavailable: $fontFile is missing or unreadable at "
+                        . "app/lib/TFPDF/font/unifont/ on this server. Re-upload that folder from the deployment package."
+                    );
+                }
+            }
+            $pdf = new tFPDF($orientation, 'mm', 'A4');
+            $pdf->SetAutoPageBreak(false);
+            $pdf->AddFont('DejaVu', '', 'DejaVuSans.ttf', true);
+            $pdf->AddFont('DejaVu', 'B', 'DejaVuSans-Bold.ttf', true);
+            $pdf->AddPage();
+            return $pdf;
+        } catch (RuntimeException $e) {
+            $lastError = $e;
+            if ($i < $attempts) {
+                error_log("_donation_pdf_new: attempt $i/$attempts failed (" . $e->getMessage() . "), retrying");
+                usleep(300000); // 0.3s - gives a transient lock/scan time to clear
+            }
+        }
+    }
+    throw $lastError;
 }
 
 /** Generates a premium landscape donation certificate as raw PDF bytes (for preview streaming or email attachment). Pass $customMessage to preview/send an edited-but-unsaved wording. */
