@@ -4,4 +4,4 @@ Disallow: /config/
 Disallow: /app/
 Allow: /
 
-Sitemap: https://YOUR-DOMAIN.org/sitemap.php
+Sitemap: https://swajinwelfarefoundation.org/sitemap.php

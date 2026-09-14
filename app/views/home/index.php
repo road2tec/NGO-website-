@@ -9,7 +9,7 @@
         <div class="swiper-slide">
           <div class="row align-items-center g-4">
             <div class="col-lg-6" data-aos="fade-up">
-              <div class="eyebrow mb-3">Seva Sankalp Foundation</div>
+              <div class="eyebrow mb-3"><?= e(setting('site_name')) ?></div>
               <h1 class="mb-3"><?= e($b['title']) ?></h1>
               <p class="lead mb-4"><?= e($b['subtitle']) ?></p>
               <div class="d-flex flex-wrap gap-3">
